@@ -4,7 +4,6 @@ import { StatusCodes } from 'http-status-codes';
 import BadRequestError from '../../errors/bad-request.js';
 import NotFoundError from '../../errors/not-found.js';
 import { getCache, setCache, clearCache } from '../../utils/redisCaching.js';
-// import redisClient from '../../configs/redisConfig.js';
 
 export const createService = async (req, res) => {
   const { name } = req.body;
@@ -89,5 +88,6 @@ export const deleteService = async (req, res) => {
       id: parseInt(serviceId, 10),
     },
   });
+  await clearCache(`service:${serviceId}`);
   res.status(StatusCodes.OK).json({ message: 'Service deleted successfully' });
 };

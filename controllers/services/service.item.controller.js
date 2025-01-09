@@ -3,6 +3,7 @@ let prisma = new PrismaClient();
 import { StatusCodes } from 'http-status-codes';
 import BadRequestError from '../../errors/bad-request.js';
 import NotFoundError from '../../errors/not-found.js';
+import { getCache, setCache, clearCache } from '../../utils/redisCaching.js';
 
 export const createServiceItem = async (req, res) => {
   const {
@@ -84,17 +85,21 @@ export const createServiceItem = async (req, res) => {
       },
     },
   });
+  await clearCache('serviceItems:list');
 
   res.status(StatusCodes.CREATED).json(serviceItem);
 };
 
 export const getAllServiceItems = async (req, res) => {
-  const { page = 1, limit = 10 } = req.query; // Default to page 1 with 10 items per page
-  const skip = (page - 1) * limit;
+  const cacheKey = 'serviceItems:list';
+  const cachedServiceItems = await getCache(cacheKey);
+  if (cachedServiceItems) {
+    return res
+      .status(StatusCodes.OK)
+      .json({ serviceItems: cachedServiceItems });
+  }
 
   const serviceItems = await prisma.serviceItem.findMany({
-    skip: parseInt(skip, 10),
-    take: parseInt(limit, 10),
     select: {
       id: true,
       name: true,
@@ -125,17 +130,20 @@ export const getAllServiceItems = async (req, res) => {
     },
   });
 
-  const totalCount = await prisma.serviceItem.count(); // Get total count for pagination
+  await setCache(cacheKey, serviceItems, 3600);
+
   res.status(StatusCodes.OK).json({
     serviceItems,
-    totalCount,
-    currentPage: parseInt(page, 10),
-    totalPages: Math.ceil(totalCount / limit),
   });
 };
 
 export const getServiceItemById = async (req, res) => {
   const { id: serviceItemId } = req.params;
+  const cacheKey = `serviceItem:${serviceItemId}`;
+  const cachedServiceItem = await getCache(cacheKey);
+  if (cachedServiceItem) {
+    return res.status(StatusCodes.OK).json({ serviceItem: cachedServiceItem });
+  }
   const serviceItem = await prisma.serviceItem.findUnique({
     where: {
       id: parseInt(serviceItemId, 10),
@@ -152,6 +160,7 @@ export const getServiceItemById = async (req, res) => {
   if (!serviceItem) {
     throw new NotFoundError('ServiceItem not found');
   }
+  await setCache(cacheKey, serviceItem, 3600);
   res.status(StatusCodes.OK).json(serviceItem);
 };
 
@@ -251,6 +260,8 @@ export const updateServiceItem = async (req, res) => {
     },
   });
 
+  await clearCache(`serviceItem:${serviceItemId}`);
+
   res.status(StatusCodes.OK).json(updatedServiceItem);
 };
 
@@ -271,6 +282,7 @@ export const deleteServiceItem = async (req, res) => {
       id: parseInt(serviceItemId, 10),
     },
   });
+  await clearCache(`serviceItem:${serviceItemId}`);
 
   res
     .status(StatusCodes.OK)
