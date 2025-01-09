@@ -1,0 +1,228 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "darwin-arm64", "linux-musl-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id String @id @default(uuid())
+  name String
+  email String @unique @db.VarChar(255)
+  password String
+  phoneNumber String
+  role String @default("ADMIN")
+  isVerified        Boolean    @default(false)
+  verificationToken String?
+  tokenExpiration   DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Client {
+  id String @id @default(uuid())
+  name String
+  companyName String
+  email String @unique @db.VarChar(255)
+  password String
+  phoneNumber String
+  customerClass CustomerClass @default(BRONZE)
+  isEmailVerified         Boolean  @default(false)
+  isPhoneVerified         Boolean  @default(false)
+  isWhatsAppVerified      Boolean   @default(false)
+  emailVerificationToken String?
+  emailTokenExpiration DateTime?
+  phoneVerificationToken String?
+  phoneTokenExpiration  DateTime?
+  whatsappVerificationToken String?
+  whatsappTokenExpiration DateTime?
+  services ServiceItem[]
+  cart Cart[]
+  orders Order[]
+  companies Company[]
+  payments Payment[]
+  chats Chat[]
+  role Role @default(CLIENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Employee {
+  id String @id @default(uuid())
+  name String
+  identityNumber String
+  dob DateTime
+  email String @unique @db.VarChar(255)
+  password String
+  phoneNumber String
+  isVerified        Boolean    @default(false)
+  verificationToken String?
+  tokenExpiration   DateTime?
+  whatsappVerificationToken String?
+  whatsappTokenExpiration DateTime?
+  role Role @default(EMPLOYEE)
+  services ServiceItem[]
+  chats Chat[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  EMPLOYEE
+  CLIENT
+}
+
+model Company {
+  id Int @id @default(autoincrement())
+  name String
+  commercialNumber String
+  taxNumber String
+  address String
+  owner String
+  ownerEmail String
+  ownerPhoneNumber String
+  client Client @relation(fields: [clientId], references: [id])
+  clientId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Service {
+  id Int @id @default(autoincrement())
+  name String
+  services ServiceItem[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+}
+
+model ServiceItem {
+  id Int @id @default(autoincrement())
+  name String
+  price Float
+  stages String[]
+  duration String
+  activity String[]
+  service Service @relation(fields: [serviceId], references: [id])
+  serviceId Int
+  employees Employee[]
+  clients Client[]
+  status ServiceItemStatus @default(PENDING)
+  orders OrderItem[]
+  cart Cart[]
+  chats Chat[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Cart {
+  id Int @id @default(autoincrement())
+  client Client @relation(fields: [clientId], references: [id])
+  clientId String
+  serviceItem ServiceItem @relation(fields: [serviceItemId], references: [id])
+  serviceItemId Int
+  priceAtTime Float
+  quantity Int @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([clientId, serviceItemId]) 
+}
+
+
+model Order {
+  id Int @id @default(autoincrement())
+  client Client @relation(fields: [clientId], references: [id])
+  clientId String
+  totalPrice Float
+  status OrderStatus @default(PENDING)
+  orderItems OrderItem[]
+  payments Payment[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Payment {
+  id Int @id @default(autoincrement())
+  paymentId String
+  client Client @relation(fields: [clientId], references: [id])
+  clientId String
+  order Order @relation(fields: [orderId], references: [id])
+  orderId Int
+  provider String
+  method String?
+  status PaymentStatus @default(PENDING)
+  amount Float
+  currency String @default("usd")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model OrderItem {
+  id Int @id @default(autoincrement())
+  order Order @relation(fields: [orderId], references: [id])
+  orderId Int
+  serviceItem ServiceItem @relation(fields: [serviceItemId], references: [id])
+  serviceItemId Int
+  priceAtTime Float
+  quantity Int @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Chatting
+
+model Chat {
+  id          Int       @id @default(autoincrement())
+  serviceItem ServiceItem @relation(fields: [serviceItemId], references: [id])
+  serviceItemId Int
+  client      Client    @relation(fields: [clientId], references: [id])
+  clientId    String
+  employee    Employee  @relation(fields: [employeeId], references: [id])
+  employeeId  String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  messages    Message[]
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  chat      Chat     @relation(fields: [chatId], references: [id])
+  chatId    Int
+  sender    String   // "CLIENT" or "EMPLOYEE"
+  content   String
+  createdAt DateTime @default(now())
+}
+
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+enum ServiceItemStatus {
+  COMPLETED
+  PENDING
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+enum CustomerClass {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+}

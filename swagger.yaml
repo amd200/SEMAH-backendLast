@@ -1,0 +1,807 @@
+openapi: 3.0.0
+info:
+  title: SEMAH Platform
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000/api/v1/
+  - url: http://localhost:3000
+tags:
+  - name: Clients
+  - name: Clients > Auth
+  - name: Clients > Users
+  - name: Clients > Companies
+  - name: Admins
+  - name: Admins > Auth
+  - name: Admins > Users
+  - name: Employees
+  - name: Employees > Auth
+  - name: Employees > Users
+  - name: Service
+  - name: Service Items
+  - name: Payments
+  - name: Chats
+paths:
+  /auth/client/register:
+    post:
+      tags:
+        - Clients > Auth
+      summary: Register Client
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                name: 'client #1'
+                companyName: 'company #1'
+                email: hazoomy21111@gmail.com
+                password: secret
+                phoneNumber: '+966555238136'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /auth/client/verify-email:
+    post:
+      tags:
+        - Clients > Auth
+      summary: Verify Client By Email
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                email: hazem.megahed.2001@gmail.com
+                token: '389736'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /auth/client/verify-with-phone:
+    post:
+      tags:
+        - Clients > Auth
+      summary: Send Phone Verification
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                phoneNumber: '+966599802154'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /auth/client/verify-phone:
+    post:
+      tags:
+        - Clients > Auth
+      summary: Verify Client By Phone
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                phoneNumber: '+966599802154'
+                token: '606053'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /auth/client/verify-whatsapp:
+    post:
+      tags:
+        - Clients > Auth
+      summary: Send WhatsApp Code
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                phoneNumber: '+966555238136'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /auth/client/confirm-whatsapp-verification:
+    post:
+      tags:
+        - Clients > Auth
+      summary: Verify Client By WhatsApp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                phoneNumber: '+966555238136'
+                token: '181385'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /auth/client/login:
+    post:
+      tags:
+        - Clients > Auth
+      summary: Login Client
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                email: hazem.megahed.2001@gmail.com
+                password: secret
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /auth/client/login-with-phone:
+    post:
+      tags:
+        - Clients > Auth
+      summary: Login Client With Phone
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                phoneNumber: '+966555238136'
+                password: secret
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /auth/client/logout:
+    get:
+      tags:
+        - Clients > Auth
+      summary: Logout Client
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /clients:
+    get:
+      tags:
+        - Clients > Users
+      summary: Get All Clients
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /clients/55b6122c-ff3b-476b-89ce-d82aa29c7455:
+    get:
+      tags:
+        - Clients > Users
+      summary: Get Client By Id
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    patch:
+      tags:
+        - Clients > Users
+      summary: Update Client Info
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                name: updated
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /clients/b956c549-fd4c-4227-9e77-1c4c01642e47:
+    delete:
+      tags:
+        - Clients > Users
+      summary: Delete Client
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /companies:
+    post:
+      tags:
+        - Clients > Companies
+      summary: Create Company
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                name: 'company #1'
+                commercialNumber: '194314134'
+                taxNumber: '51312312'
+                address: Saudi Arabia, Al Malaz, Arafat ST
+                owner: Hazem
+                ownerEmail: hazem@owner.com
+                ownerPhoneNumber: '+9665994814'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    get:
+      tags:
+        - Clients > Companies
+      summary: Get All Companies
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /companies/3:
+    get:
+      tags:
+        - Clients > Companies
+      summary: Get Company By Id
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    patch:
+      tags:
+        - Clients > Companies
+      summary: Update Company
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                name: companyUpdated
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /companies/1:
+    delete:
+      tags:
+        - Clients > Companies
+      summary: Delete Company
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /auth/admin/register:
+    post:
+      tags:
+        - Admins > Auth
+      summary: Register Admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                name: Testing Admin
+                email: nour.anoosh.2@sgmail.com
+                password: secret
+                phoneNumber: '+9665939003'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /auth/admin/verify:
+    post:
+      tags:
+        - Admins > Auth
+      summary: Verify Admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                email: nour.anoosh.2@gmail.com
+                token: '100728'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /auth/admin/login:
+    post:
+      tags:
+        - Admins > Auth
+      summary: Admin Login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                email: nour.anoosh.2@gmail.com
+                password: secret
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /auth/test-sms:
+    post:
+      tags:
+        - Admins > Auth
+      summary: SMS Test
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                phoneNumber: '+966555238136'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /admins:
+    get:
+      tags:
+        - Admins > Users
+      summary: Get All Admins
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /admins/5c3595ff-f315-4e92-bca2-16fb12893740:
+    get:
+      tags:
+        - Admins > Users
+      summary: Get Admin By Id
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /admins/76b375ca-123d-4619-a62d-70a033230a4a:
+    delete:
+      tags:
+        - Admins > Users
+      summary: Delete Admin
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /auth/employee/register:
+    post:
+      tags:
+        - Employees > Auth
+      summary: Employee Register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                name: 'employee #1'
+                email: hazoomy21sa21@gmail.com
+                identityNumber: '2919414123'
+                dob: 01-01-1990
+                password: secret
+                phoneNumber: '+201550435296'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /auth/employee/verify:
+    post:
+      tags:
+        - Employees > Auth
+      summary: Verify Employee Email
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                email: hazoomy21@gmail.com
+                token: '739844'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /auth/employee/verify-with-whatsapp:
+    post:
+      tags:
+        - Employees > Auth
+      summary: WhatsApp Send Code
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                phoneNumber: '+201550435296'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /auth/employee/login:
+    post:
+      tags:
+        - Employees > Auth
+      summary: Employee Login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                email: hazoomy21@gmail.com
+                password: secret
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /auth/employee/confirm-whatsapp:
+    post:
+      tags:
+        - Employees > Auth
+      summary: Verify WhatsApp Code
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                phoneNumber: '+201550435296'
+                token: '928320'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /auth/employee/logout:
+    get:
+      tags:
+        - Employees > Auth
+      summary: Employee Logout
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /employees:
+    get:
+      tags:
+        - Employees > Users
+      summary: Get All Employees
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /employees/8ce4f8bf-2148-4e74-bde3-9ed815c80dcb:
+    get:
+      tags:
+        - Employees > Users
+      summary: Get Employee By Id
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    patch:
+      tags:
+        - Employees > Users
+      summary: Update Employee
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                name: employeeUpdated
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - Employees > Users
+      summary: Delete Employee
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /service:
+    post:
+      tags:
+        - Service
+      summary: Create Service
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                name: Corporate Services
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    get:
+      tags:
+        - Service
+      summary: Get All Services
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /service/1:
+    get:
+      tags:
+        - Service
+      summary: Get Service By Id
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /service/2:
+    patch:
+      tags:
+        - Service
+      summary: Update Service
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                name: Service | Updated
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /service/6:
+    delete:
+      tags:
+        - Service
+      summary: Delete Service
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /service-item/:
+    post:
+      tags:
+        - Service Items
+      summary: Create Service Item
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                name: Incorporate Services
+                price: 90
+                stages:
+                  - 'stage #1'
+                  - 'stage #2'
+                  - 'stage #3'
+                activity:
+                  - service activity
+                  - industrul activity
+                  - business activity
+                duration: 30 Days
+                serviceId: 4
+                clientIds:
+                  - 55b6122c-ff3b-476b-89ce-d82aa29c7455
+                employeeIds:
+                  - 8ce4f8bf-2148-4e74-bde3-9ed815c80dcb
+                  - 798885d6-ce4f-4986-8e5c-6abbabb3a116
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    get:
+      tags:
+        - Service Items
+      summary: Get All Service Items
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /service-item/1:
+    get:
+      tags:
+        - Service Items
+      summary: Get Service Item By Id
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    patch:
+      tags:
+        - Service Items
+      summary: Update Service Item
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                name: Incorporate Services
+                employeeIds:
+                  - 8ce4f8bf-2148-4e74-bde3-9ed815c80dcb
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /service-item/10:
+    delete:
+      tags:
+        - Service Items
+      summary: Delete Service Item
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /payments:
+    get:
+      tags:
+        - Payments
+      summary: Get All Orders
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /payments/payments:
+    get:
+      tags:
+        - Payments
+      summary: Get All Payments
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /payments/cart:
+    post:
+      tags:
+        - Payments
+      summary: Add to cart
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                serviceItemId: 1
+                quantity: 2
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    get:
+      tags:
+        - Payments
+      summary: Get Cart
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /payments/cart/clear:
+    delete:
+      tags:
+        - Payments
+      summary: Delete cart
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /payments/checkout:
+    post:
+      tags:
+        - Payments
+      summary: Checkout With Stripe
+      requestBody:
+        content: {}
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/v1/payments/success:
+    get:
+      tags:
+        - Payments
+      summary: Handle Success
+      parameters:
+        - name: session_id
+          in: query
+          schema:
+            type: string
+          example: cs_test_a1iPuD0zoPucbrYnRqUld7tA9ZfvyZWMvxMm1XK78vCg5iBq4S6oet4UBT
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /chats:
+    get:
+      tags:
+        - Chats
+      summary: Get All Chats
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /chats/1/messages:
+    get:
+      tags:
+        - Chats
+      summary: Get Chat Messages
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    post:
+      tags:
+        - Chats
+      summary: Send Chat Message
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                content: employee send message
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
