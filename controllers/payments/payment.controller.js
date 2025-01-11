@@ -5,6 +5,7 @@ import BadRequestError from '../../errors/bad-request.js';
 import NotFoundError from '../../errors/not-found.js';
 import stripe from '../../configs/stripeConfig.js';
 import { notifyEmployee } from '../../configs/websocketConfig.js';
+import UnauthorizedError from '../../errors/unauthorized.js';
 
 export const addToCart = async (req, res) => {
   const { serviceItemId, quantity } = req.body;
@@ -12,6 +13,10 @@ export const addToCart = async (req, res) => {
     throw new BadRequestError('No serviceItemId provided');
   }
   const clientId = req.user.userId;
+
+  if (!req.user.role) {
+    throw new UnauthorizedError('Unauthorized to access this route');
+  }
 
   // Validate clientId
   const client = await prisma.client.findUnique({
@@ -55,6 +60,10 @@ export const addToCart = async (req, res) => {
 
 export const getCart = async (req, res) => {
   const clientId = req.user.userId;
+
+  if (!req.user.role) {
+    throw new UnauthorizedError('Unauthorized to access this route');
+  }
 
   const cartItems = await prisma.cart.findMany({
     where: {

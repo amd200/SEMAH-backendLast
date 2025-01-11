@@ -114,12 +114,11 @@ export const verifyClientPhone = async (req, res) => {
     );
   }
 
-  // Use Twilio's Verify API to check the code
   const verificationCheck = await client.verify.v2
     .services(process.env.TWILIO_VERIFY_SERVICE_SID)
     .verificationChecks.create({
       to: phoneNumber,
-      code: token, // Code provided by the user
+      code: token,
     });
 
   if (verificationCheck.status !== 'approved') {
@@ -325,7 +324,6 @@ export const verifyUsingWhatsApp = async (req, res) => {
   }
 };
 
-// Verify WhatsApp verification code
 export const confirmWhatsAppVerification = async (req, res) => {
   const { phoneNumber, token } = req.body;
 
@@ -363,4 +361,64 @@ export const confirmWhatsAppVerification = async (req, res) => {
   res
     .status(StatusCodes.OK)
     .json({ message: 'WhatsApp verified successfully.' });
+};
+
+export const forgetPassword = async (req, res) => {
+  const { phoneNumber } = req.body;
+  if (!phoneNumber) {
+    throw new BadRequestError('Please provide a valid phoneNumber');
+  }
+
+  const findClient = await prisma.client.findFirst({
+    where: { phoneNumber },
+  });
+
+  const verification = await client.verify.v2
+    .services(process.env.TWILIO_VERIFY_SERVICE_SID)
+    .verifications.create({
+      to: phoneNumber,
+      channel: 'sms', //
+    });
+
+  res
+    .status(StatusCodes.OK)
+    .json({ message: 'Verification code sent successfully' });
+};
+
+export const resetPassword = async (req, res) => {
+  const { phoneNumber, token, newPassword } = req.body;
+  if (!phoneNumber || !token || !newPassword) {
+    throw new BadRequestError('Please provide all required fields');
+  }
+
+  const verificationCheck = await client.verify.v2
+    .services(process.env.TWILIO_VERIFY_SERVICE_SID)
+    .verificationChecks.create({
+      to: phoneNumber,
+      code: token,
+    });
+
+  if (verificationCheck.status !== 'approved') {
+    throw new BadRequestError('Invalid or expired token');
+  }
+
+  const clientData = await prisma.client.findFirst({
+    where: { phoneNumber },
+  });
+
+  if (!clientData) {
+    throw new BadRequestError('Client not found');
+  }
+
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+  const updatedUser = await prisma.client.update({
+    where: { id: clientData.id },
+    data: { password: hashedPassword },
+  });
+
+  res
+    .status(StatusCodes.OK)
+    .json({ message: 'Password updated successfully', updatedUser });
 };

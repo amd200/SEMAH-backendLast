@@ -10,6 +10,8 @@ import {
   confirmWhatsAppVerification,
   logout,
   testSms,
+  forgetPassword,
+  resetPassword,
 } from '../../controllers/clients/auth.controller.js';
 import {
   authenticatedUser,
@@ -45,4 +47,6 @@ router.post(
   confirmWhatsAppVerification
 );
 
+router.post('/forget-password', forgetPassword);
+router.post('/reset-password', resetPassword);
 export default router;

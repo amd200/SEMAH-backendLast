@@ -34,6 +34,7 @@ import errorHandlerMiddleware from './middleware/error-handler.js';
 // Routes
 import authRoutes from './routes/clients/auth.routes.js';
 import clientsRoutes from './routes/clients/user.routes.js';
+import commissionerRoutes from './routes/clients/comissioner.routes.js';
 import adminAuthRoutes from './routes/admins/auth.routes.js';
 import adminUsersRoutes from './routes/admins/user.routes.js';
 import employeeAuthRoutes from './routes/employees/auth.routes.js';
@@ -44,12 +45,11 @@ import serviceItemRoutes from './routes/services/service.item.routes.js';
 import paymentRoutes from './routes/payments/payment.routes.js';
 import chatRoutes from './routes/chats/chat.routes.js';
 
-// app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 app.use(
   cors({
-    origin: 'http://127.0.0.1:5500', // Replace with your frontend origin
-    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allow specific methods
-    credentials: true, // Allow cookies to be sent if required
+    origin: 'http://127.0.0.1:5500',
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    credentials: true,
   })
 );
 app.use(morgan('dev'));
@@ -70,6 +70,7 @@ app.get('/', (req, res) => {
 // Clients Routes
 app.use('/api/v1/auth/', authRoutes);
 app.use('/api/v1/clients/', clientsRoutes);
+app.use('/api/v1/commissioner', commissionerRoutes);
 
 // Admin Routes
 app.use('/api/v1/auth/', adminAuthRoutes);

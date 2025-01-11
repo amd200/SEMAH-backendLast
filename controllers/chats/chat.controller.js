@@ -6,73 +6,65 @@ import NotFoundError from '../../errors/not-found.js';
 
 export const getChats = async (req, res) => {
   const { userId } = req.user;
+  const client = await prisma.client.findUnique({
+    where: { id: userId },
+  });
 
-  console.log('Fetching chats for user:', { userId });
-
-  try {
-    // Check if the user is a client
-    const client = await prisma.client.findUnique({
-      where: { id: userId },
+  if (client) {
+    const chats = await prisma.chat.findMany({
+      where: { clientId: userId },
+      include: {
+        serviceItem: { select: { name: true } },
+        employee: { select: { name: true, email: true } },
+      },
     });
 
-    if (client) {
-      // User is a client, fetch chats where the user is the client
-      const chats = await prisma.chat.findMany({
-        where: { clientId: userId },
-        include: {
-          serviceItem: { select: { name: true } }, // Include service item details
-          employee: { select: { name: true, email: true } }, // Include employee details
-        },
-      });
+    return res.status(StatusCodes.OK).json(chats);
+  }
 
-      console.log('Chats for client retrieved:', chats);
+  const employee = await prisma.employee.findUnique({
+    where: { id: userId },
+  });
 
-      return res.status(StatusCodes.OK).json(chats);
-    }
-
-    // Check if the user is an employee
-    const employee = await prisma.employee.findUnique({
-      where: { id: userId },
+  if (employee) {
+    const chats = await prisma.chat.findMany({
+      where: { employeeId: userId },
+      include: {
+        serviceItem: { select: { name: true } },
+        client: { select: { name: true, email: true } },
+      },
     });
 
-    if (employee) {
-      // User is an employee, fetch chats where the user is the employee
-      const chats = await prisma.chat.findMany({
-        where: { employeeId: userId },
-        include: {
-          serviceItem: { select: { name: true } }, // Include service item details
-          client: { select: { name: true, email: true } }, // Include client details
-        },
-      });
+    console.log('Chats for employee retrieved:', chats);
 
-      console.log('Chats for employee retrieved:', chats);
-
-      return res.status(StatusCodes.OK).json(chats);
-    }
-
-    // If the user is neither a client nor an employee
-    throw new BadRequestError('Invalid user role');
-  } catch (error) {
-    console.error('Error fetching chats:', error);
-    throw new Error('Failed to fetch chats');
+    return res.status(StatusCodes.OK).json(chats);
   }
 };
 
 export const getMessages = async (req, res) => {
   const { chatId } = req.params;
   const userId = req.user.userId;
-  const role = req.user.role;
 
   const chat = await prisma.chat.findUnique({
     where: { id: parseInt(chatId, 10) },
   });
 
-  if (
-    !chat ||
-    (role === 'CLIENT' && chat.clientId !== userId) ||
-    (role === 'EMPLOYEE' && chat.employeeId !== userId)
-  ) {
-    throw new NotFoundError('Chat not found or access denied');
+  const client = await prisma.client.findUnique({
+    where: { id: chat.clientId },
+    include: { commissioner: true },
+  });
+  const isCommissioner = client.commissioner.some(
+    (commissioner) => commissioner.id === userId
+  );
+  const isClient = chat.clientId === userId;
+  const isEmployee = chat.employeeId === userId;
+
+  console.log(isClient, isEmployee, isCommissioner);
+
+  if (!isClient && !isEmployee && !isCommissioner) {
+    return res.status(StatusCodes.FORBIDDEN).json({
+      message: 'You do not have access to this chat',
+    });
   }
 
   const messages = await prisma.message.findMany({
