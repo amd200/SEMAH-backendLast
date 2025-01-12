@@ -71,3 +71,29 @@ export const employeeRegisterSchema = Joi.object({
       'string.pattern.base': `Phone number must start with ' + ' followed by 8 to 15 digits`,
     }),
 });
+
+export const clientForgetPassword = Joi.object({
+  phoneNumber: Joi.string()
+    .pattern(/^\+?[0-9]{8,15}$/)
+    .required()
+    .messages({
+      'string.pattern.base': `Phone number must start with ' + ' followed by 8 to 15 digits`,
+    }),
+});
+
+export const clientResetPassword = Joi.object({
+  phoneNumber: Joi.string()
+    .pattern(/^\+?[0-9]{8,15}$/)
+    .required()
+    .messages({
+      'string.pattern.base': `Phone number must start with ' + ' followed by 8 to 15 digits`,
+    }),
+  newPassword: Joi.string().min(6).required().messages({
+    'string.min': 'Password must be at least 6 characters long',
+    'any.required': 'Password is required',
+  }),
+  token: Joi.string().max(6).required().messages({
+    'string.max': 'Token is only 6 characters',
+    'any.required': 'Token is required',
+  }),
+});

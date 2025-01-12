@@ -22,6 +22,8 @@ import {
   loginSchema,
   loginWithPhoneSchema,
   clientRegisterSchema,
+  clientForgetPassword,
+  clientResetPassword,
 } from '../../utils/validation/auth.validation.js';
 const router = express.Router();
 
@@ -47,6 +49,6 @@ router.post(
   confirmWhatsAppVerification
 );
 
-router.post('/forget-password', forgetPassword);
-router.post('/reset-password', resetPassword);
+router.post('/forget-password', validate(clientForgetPassword), forgetPassword);
+router.post('/reset-password', validate(clientResetPassword), resetPassword);
 export default router;
