@@ -2,8 +2,8 @@ steps to install & run the project
 1- clone the project
 
 ```sh
-git clone https://github.com/HazemSarhan/SEMAH.git
-cd SEMAH
+git clone https://github.com/HazemSarhan/SEMAH-backend.git
+cd SEMAH-backend
 ```
 
 2- install all depencies
