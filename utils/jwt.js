@@ -20,6 +20,11 @@ const attachCookiesToResponse = ({ res, user }) => {
     signed: true,
     sameSite: 'none',
   });
+
+  console.log('Cookie set: ', {
+    token,
+    secure: process.env.NODE_ENV === 'production',
+  });
 };
 
 export { createJWT, isTokenValid, attachCookiesToResponse };

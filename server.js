@@ -45,16 +45,16 @@ import serviceItemRoutes from './routes/services/service.item.routes.js';
 import paymentRoutes from './routes/payments/payment.routes.js';
 import chatRoutes from './routes/chats/chat.routes.js';
 
+app.use(morgan('dev'));
+app.use(express.json());
+app.use(cookieParser(process.env.JWT_SECRET));
 app.use(
   cors({
-    origin: 'http://127.0.0.1:5500',
+    origin: 'http://localhost:5173',
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     credentials: true,
   })
 );
-app.use(morgan('dev'));
-app.use(express.json());
-app.use(cookieParser(process.env.JWT_SECRET));
 app.use(
   fileUpload({
     useTempFiles: true,
@@ -92,6 +92,11 @@ app.use('/api/v1/payments/', paymentRoutes);
 
 // Chats
 app.use('/api/v1/chats/', chatRoutes);
+
+app.get('/api/v1/debug-cookies', (req, res) => {
+  console.log('Cookies:', req.cookies);
+  res.status(200).json({ cookies: req.cookies });
+});
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
