@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon server.js"
+    "build": "prisma generate",
+    "start": "node server.js",
+    "dev": "prisma generate && nodemon server.js"
   },
   "keywords": [],
   "author": "",
