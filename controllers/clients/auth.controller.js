@@ -188,7 +188,7 @@ export const clientLogin = async (req, res) => {
   }
 
   // Check if the email exists
-  const client = await prisma.client.findUnique({
+  const client = await prisma.client.findFirst({
     where: {
       email: email,
     },
@@ -209,10 +209,9 @@ export const clientLogin = async (req, res) => {
   }
 
   const clientToken = createTokenUser(client);
+  console.log(clientToken);
   attachCookiesToResponse({ res, user: clientToken });
-  res
-    .status(StatusCodes.OK)
-    .json({ message: 'Login Success', user: clientToken });
+  res.status(StatusCodes.OK).json({ user: clientToken });
 };
 
 export const clientLoginWithPhone = async (req, res) => {
