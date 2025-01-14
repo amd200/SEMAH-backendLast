@@ -124,6 +124,7 @@ model Service {
 model ServiceItem {
   id Int @id @default(autoincrement())
   name String
+  description String?
   price Float
   stages String[]
   duration String
