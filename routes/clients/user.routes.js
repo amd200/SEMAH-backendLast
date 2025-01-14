@@ -12,13 +12,15 @@ import {
 } from '../../middleware/authentication.js';
 const router = express.Router();
 
-router.route('/').get(getAllClients);
+router
+  .route('/')
+  .get([authenticatedUser, authorizePermissions('ADMIN')], getAllClients);
 
 router.route('/showCurrent').get(authenticatedUser, showCurrentClient);
 router
   .route('/:id')
   .delete([authenticatedUser, authorizePermissions('ADMIN')], deleteClient)
-  .get(getClientById)
+  .get([authenticatedUser, authorizePermissions('ADMIN')], getClientById)
   .patch([authenticatedUser, authorizePermissions('ADMIN')], updateClient);
 
 export default router;

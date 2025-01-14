@@ -273,3 +273,23 @@ export const getAllPayments = async (req, res) => {
   const payments = await prisma.payment.findMany();
   res.status(StatusCodes.OK).json(payments);
 };
+
+export const getAuthenticatedUserOrdeers = async (req, res) => {
+  const userId = req.user.userId;
+
+  console.log(userId);
+
+  const payments = await prisma.payment.findMany({
+    where: {
+      clientId: userId,
+    },
+  });
+
+  console.log(payments);
+
+  if (!payments) {
+    throw new NotFoundError(`No payments found!`);
+  }
+
+  res.status(StatusCodes.OK).json({ payments });
+};

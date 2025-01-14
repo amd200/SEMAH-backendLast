@@ -4,15 +4,31 @@ import { StatusCodes } from 'http-status-codes';
 import BadRequestError from '../../errors/bad-request.js';
 import NotFoundError from '../../errors/not-found.js';
 import { getCache, setCache, clearCache } from '../../utils/redisCaching.js';
+import cloudinary from '../../configs/cloudinaryConfig.js';
+import fs from 'fs';
 
 export const createService = async (req, res) => {
   const { name } = req.body;
   if (!name) {
     throw new BadRequestError('Service Name is required');
   }
+  let picture = '/uploads/default-product.jpeg';
+  if (req.files && req.files.picture) {
+    const result = await cloudinary.uploader.upload(
+      req.files.picture.tempFilePath,
+      {
+        use_filename: true,
+        folder: 'product-images',
+      }
+    );
+    fs.unlinkSync(req.files.picture.tempFilePath);
+    picture = result.secure_url;
+  }
+
   const service = await prisma.service.create({
     data: {
       name,
+      picture,
     },
   });
   await clearCache('services:list');
@@ -25,7 +41,9 @@ export const getAllServices = async (req, res) => {
   if (cachedServices) {
     return res.status(StatusCodes.OK).json({ services: cachedServices });
   }
-  const services = await prisma.service.findMany();
+  const services = await prisma.service.findMany({
+    include: { services: true },
+  });
   await setCache(cacheKey, services, 3600);
   res.status(StatusCodes.OK).json(services);
 };
@@ -42,6 +60,7 @@ export const getServiceById = async (req, res) => {
     where: {
       id: parseInt(serviceId, 10),
     },
+    include: { services: true },
   });
   if (!service) {
     throw new NotFoundError('Service not found');
