@@ -16,6 +16,7 @@ export const initializeWebSocket = (httpServer) => {
     // Handle message sending
     socket.on('send-message', (data) => {
       const { chatId, content, sender } = data;
+      console.log(data);
       // Emit the received message to all clients in the specific chat room
       io.to(chatId).emit('receive-message', { chatId, content, sender });
     });
@@ -24,6 +25,11 @@ export const initializeWebSocket = (httpServer) => {
     socket.on('join-room', (chatId) => {
       socket.join(chatId);
       console.log(`User ${socket.id} joined room: ${chatId}`);
+    });
+
+    socket.on('receive-message', (data) => {
+      console.log('New message received:', data);
+      // Update the chat UI with the new message
     });
 
     // Handle disconnection

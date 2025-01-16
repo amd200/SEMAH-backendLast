@@ -91,6 +91,7 @@ export const getCommissionerById = async (req, res) => {
   if (!commissioner) {
     throw new NotFoundError(`No commissioners Found!`);
   }
+
   res.status(StatusCodes.OK).json({ commissioner });
 };
 
@@ -127,9 +128,94 @@ export const updateCommissioner = async (req, res) => {
     updateData.password = await bcrypt.hash(password, salt);
   }
 
+  const client = await prisma.client.findUnique({
+    where: { id: clientId },
+    include: { commissioner: true },
+  });
+
+  const isCommissionerAssociated = client.commissioner.some(
+    (commissioner) => commissioner.id === parseInt(commissionerId, 10)
+  );
+
+  if (!isCommissionerAssociated) {
+    throw new UnauthorizedError(
+      'You are not authorized to modify this commissioner'
+    );
+  }
+
   const updateCommissioner = await prisma.commissioner.update({
     where: { id: parseInt(commissionerId) },
     data: updateData,
   });
   res.status(StatusCodes.OK).json({ updateCommissioner });
+};
+
+export const deleteCommissioner = async (req, res) => {
+  const clientId = req.user.userId;
+  if (!req.user.role) {
+    throw new UnauthorizedError('Unauthorized to access this route');
+  }
+  const { id: commissionerId } = req.params;
+  const commissioner = await prisma.commissioner.findFirst({
+    where: { id: parseInt(commissionerId) },
+  });
+  if (!commissioner) {
+    throw new NotFoundError(`No commissioners Found!`);
+  }
+
+  const client = await prisma.client.findUnique({
+    where: { id: clientId },
+    include: { commissioner: true },
+  });
+
+  const isCommissionerAssociated = client.commissioner.some(
+    (commissioner) => commissioner.id === parseInt(commissionerId, 10)
+  );
+
+  if (!isCommissionerAssociated) {
+    throw new UnauthorizedError(
+      'You are not authorized to modify this commissioner'
+    );
+  }
+
+  const deleteCommissioner = await prisma.commissioner.delete({
+    where: { id: parseInt(commissionerId) },
+  });
+
+  res.status(StatusCodes.OK).json({ msg: 'Commissioner has beed deleted!' });
+};
+export const assignCommissionerToOrder = async (req, res) => {
+  const { commissionerId, orderId } = req.body;
+  if (!commissionerId || !orderId) {
+    throw new BadRequestError('Please provide commissionerId and orderId');
+  }
+
+  const commissioner = await prisma.commissioner.findUnique({
+    where: { id: parseInt(commissionerId, 10) },
+  });
+
+  if (!commissioner) {
+    throw new NotFoundError('Commissioner not found');
+  }
+
+  const order = await prisma.order.findUnique({
+    where: { id: parseInt(orderId, 10) },
+  });
+
+  if (!order) {
+    throw new NotFoundError('Order not found');
+  }
+
+  await prisma.order.update({
+    where: { id: parseInt(orderId, 10) },
+    data: {
+      commissioners: {
+        connect: { id: parseInt(commissionerId, 10) },
+      },
+    },
+  });
+
+  res
+    .status(StatusCodes.OK)
+    .json({ message: 'Commissioner assigned to order', order });
 };

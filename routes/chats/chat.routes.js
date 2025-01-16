@@ -14,7 +14,7 @@ import { validate } from '../../middleware/validation.js';
 import { chatMessageSchema } from '../../utils/validation/chat.validation.js';
 const router = express.Router();
 
-router.route('/').get(authenticatedUser, getChats);
+router.route('/').get([authenticatedUser], getChats);
 router
   .route('/all')
   .get([authenticatedUser, authorizePermissions('ADMIN')], getAllChats);

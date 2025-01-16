@@ -152,6 +152,7 @@ export const showCurrentClient = async (req, res) => {
       isWhatsAppVerified: true,
       createdAt: true,
       updatedAt: true,
+      commissioner: true,
     },
   });
   if (!client) {

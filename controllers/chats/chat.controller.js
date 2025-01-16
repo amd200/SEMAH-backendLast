@@ -5,7 +5,7 @@ import BadRequestError from '../../errors/bad-request.js';
 import NotFoundError from '../../errors/not-found.js';
 
 export const getChats = async (req, res) => {
-  const { userId } = req.user;
+  const userId = req.user.userId;
   const client = await prisma.client.findUnique({
     where: { id: userId },
   });
@@ -35,9 +35,7 @@ export const getChats = async (req, res) => {
       },
     });
 
-    console.log('Chats for employee retrieved:', chats);
-
-    return res.status(StatusCodes.OK).json(chats);
+    return res.status(StatusCodes.OK).json({ chats });
   }
 };
 
@@ -106,6 +104,17 @@ export const sendMessage = async (req, res) => {
       content,
     },
   });
+
+  const io = req.app.get('io');
+  if (io) {
+    // Emit the message to all clients in the specified chat room
+    io.to(chatId).emit('receive-message', {
+      chatId,
+      content,
+      sender,
+      createdAt: message.createdAt, // Include the message timestamp
+    });
+  }
 
   res.status(StatusCodes.CREATED).json(message);
 };

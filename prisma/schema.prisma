@@ -63,10 +63,10 @@ model Commissioner {
   identityNumber String
   phoneNumber String
   password String
-  serviceItem ServiceItem? @relation(fields: [serviceItemId], references: [id])
-  serviceItemId Int?
+  serviceItem ServiceItem[]
   client Client @relation(fields: [clientId], references: [id])
   clientId String
+  orders Order[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -163,6 +163,7 @@ model Order {
   totalPrice Float
   status OrderStatus @default(PENDING)
   orderItems OrderItem[]
+  commissioners Commissioner[]
   payments Payment[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

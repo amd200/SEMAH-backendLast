@@ -218,7 +218,7 @@ export const handleSuccess = async (req, res) => {
   // Update the order status to COMPLETED
   await prisma.order.update({
     where: { id: order.id },
-    data: { status: 'COMPLETED' },
+    data: { status: 'PENDING' },
   });
 
   // Add the client to the purchased ServiceItems and create chats
@@ -274,22 +274,23 @@ export const getAllPayments = async (req, res) => {
   res.status(StatusCodes.OK).json(payments);
 };
 
-export const getAuthenticatedUserOrdeers = async (req, res) => {
+export const getAuthenticatedUserOrders = async (req, res) => {
   const userId = req.user.userId;
 
   console.log(userId);
 
-  const payments = await prisma.payment.findMany({
+  const orders = await prisma.order.findMany({
     where: {
       clientId: userId,
     },
+    include: {
+      commissioners: { select: { id: true, name: true, phoneNumber: true } },
+    },
   });
 
-  console.log(payments);
-
-  if (!payments) {
-    throw new NotFoundError(`No payments found!`);
+  if (!orders) {
+    throw new NotFoundError(`No Orders found!`);
   }
 
-  res.status(StatusCodes.OK).json({ payments });
+  res.status(StatusCodes.OK).json({ orders });
 };

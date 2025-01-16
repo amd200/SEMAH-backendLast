@@ -10,7 +10,8 @@ const app = express();
 const httpServer = http.createServer(app);
 
 // Initialize WebSocket
-initializeWebSocket(httpServer);
+const io = initializeWebSocket(httpServer);
+app.set('io', io);
 
 // Rest Of Packages
 import morgan from 'morgan';

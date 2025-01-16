@@ -41,9 +41,8 @@ export const getAllServices = async (req, res) => {
   if (cachedServices) {
     return res.status(StatusCodes.OK).json({ services: cachedServices });
   }
-  const services = await prisma.service.findMany({
-    include: { services: true },
-  });
+  const services = await prisma.service.findMany({});
+
   await setCache(cacheKey, services, 3600);
   res.status(StatusCodes.OK).json(services);
 };

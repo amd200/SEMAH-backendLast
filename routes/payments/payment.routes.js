@@ -8,7 +8,7 @@ import {
   handleSuccess,
   getAllOrders,
   getAllPayments,
-  getAuthenticatedUserOrdeers,
+  getAuthenticatedUserOrders,
 } from '../../controllers/payments/payment.controller.js';
 import {
   authenticatedUser,
@@ -32,8 +32,6 @@ router
   .route('/payments')
   .get([authenticatedUser, authorizePermissions('ADMIN')], getAllPayments);
 
-router
-  .route('/my-orders')
-  .get([authenticatedUser], getAuthenticatedUserOrdeers);
+router.route('/my-orders').get([authenticatedUser], getAuthenticatedUserOrders);
 
 export default router;
