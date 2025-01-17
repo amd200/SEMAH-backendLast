@@ -1,8 +1,8 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 let prisma = new PrismaClient();
-import { StatusCodes } from 'http-status-codes';
-import BadRequestError from '../../errors/bad-request.js';
-import NotFoundError from '../../errors/not-found.js';
+import { StatusCodes } from "http-status-codes";
+import BadRequestError from "../../errors/bad-request.js";
+import NotFoundError from "../../errors/not-found.js";
 
 export const getChats = async (req, res) => {
   const userId = req.user.userId;
@@ -51,9 +51,7 @@ export const getMessages = async (req, res) => {
     where: { id: chat.clientId },
     include: { commissioner: true },
   });
-  const isCommissioner = client.commissioner.some(
-    (commissioner) => commissioner.id === userId
-  );
+  const isCommissioner = client.commissioner.some((commissioner) => commissioner.id === userId);
   const isClient = chat.clientId === userId;
   const isEmployee = chat.employeeId === userId;
 
@@ -61,13 +59,13 @@ export const getMessages = async (req, res) => {
 
   if (!isClient && !isEmployee && !isCommissioner) {
     return res.status(StatusCodes.FORBIDDEN).json({
-      message: 'You do not have access to this chat',
+      message: "You do not have access to this chat",
     });
   }
 
   const messages = await prisma.message.findMany({
     where: { chatId: parseInt(chatId, 10) },
-    orderBy: { createdAt: 'asc' },
+    orderBy: { createdAt: "asc" },
   });
 
   res.status(StatusCodes.OK).json(messages);
@@ -84,17 +82,11 @@ export const sendMessage = async (req, res) => {
   });
 
   if (!chat) {
-    throw new NotFoundError('Chat not found');
+    throw new NotFoundError("Chat not found");
   }
 
-  if (
-    role !== 'ADMIN' &&
-    sender !== chat.clientId &&
-    sender !== chat.employeeId
-  ) {
-    throw new BadRequestError(
-      'You are not authorized to send messages in this chat'
-    );
+  if (role !== "ADMIN" && sender !== chat.clientId && sender !== chat.employeeId) {
+    throw new BadRequestError("You are not authorized to send messages in this chat");
   }
 
   const message = await prisma.message.create({
@@ -105,15 +97,12 @@ export const sendMessage = async (req, res) => {
     },
   });
 
-  const io = req.app.get('io');
+  const io = req.app.get("io");
   if (io) {
+    const x = chatId;
     // Emit the message to all clients in the specified chat room
-    io.to(chatId).emit('receive-message', {
-      chatId,
-      content,
-      sender,
-      createdAt: message.createdAt, // Include the message timestamp
-    });
+    io.to(Number(chatId)).emit("receive-message", { content, sender: sender, chatId: chatId, createdAt: message.createdAt });
+    console.log("Message sent successfully");
   }
 
   res.status(StatusCodes.CREATED).json(message);
