@@ -130,7 +130,7 @@ export const checkoutWithStripe = async (req, res) => {
     },
     line_items: lineItems,
     mode: 'payment',
-    success_url: `${process.env.CLIENT_URL}/api/v1/payments/success?session_id={CHECKOUT_SESSION_ID}`,
+    success_url: `http://localhost:3000/api/v1/payments/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${process.env.CLIENT_URL}/payments/cancel`,
     metadata: {
       clientId,
