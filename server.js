@@ -45,6 +45,8 @@ import serviceRoutes from './routes/services/service.routes.js';
 import serviceItemRoutes from './routes/services/service.item.routes.js';
 import paymentRoutes from './routes/payments/payment.routes.js';
 import chatRoutes from './routes/chats/chat.routes.js';
+import consultationRoutes from './routes/appointments/consultation.routes.js';
+import appointmentRoutes from './routes/appointments/appointment.routes.js';
 
 app.use(morgan('dev'));
 app.use(express.json());
@@ -93,6 +95,10 @@ app.use('/api/v1/payments/', paymentRoutes);
 
 // Chats
 app.use('/api/v1/chats/', chatRoutes);
+
+// Appointments
+app.use('/api/v1/consultation', consultationRoutes);
+app.use('/api/v1/appointments', appointmentRoutes);
 
 app.get('/api/v1/debug-cookies', (req, res) => {
   console.log('Cookies:', req.cookies);

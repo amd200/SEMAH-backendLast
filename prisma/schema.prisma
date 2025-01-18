@@ -220,6 +220,34 @@ model Message {
   createdAt DateTime @default(now())
 }
 
+model Appointment {
+  id Int @id @default(autoincrement())
+  appointmentSubject AppointmentSubjects
+  consultationType Consultation? @relation(fields: [consultationId], references: [id])
+  consultationId Int?
+  appointmentType AppointmentTypes
+  date DateTime
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Consultation {
+  id Int @id @default(autoincrement())
+  name String
+  Appointments Appointment[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+enum AppointmentTypes {
+  IN_COMPANY
+  ONLINE
+}
+
+enum AppointmentSubjects {
+  CONSULTATION
+  PREVIOUS_WORK
+}
 
 enum PaymentStatus {
   PENDING

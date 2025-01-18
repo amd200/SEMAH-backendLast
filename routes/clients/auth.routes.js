@@ -12,6 +12,7 @@ import {
   testSms,
   forgetPassword,
   resetPassword,
+  resendConfirmationCode,
 } from '../../controllers/clients/auth.controller.js';
 import {
   authenticatedUser,
@@ -28,6 +29,7 @@ import {
 const router = express.Router();
 
 router.post('/client/register', validate(clientRegisterSchema), clientRegister);
+router.post('/client/resend-code', resendConfirmationCode);
 router.post('/client/login', validate(loginSchema), clientLogin);
 router.post('/client/verify-email', verifyClientEmail);
 router.post('/client/verify-with-phone', verifyWithPhone);

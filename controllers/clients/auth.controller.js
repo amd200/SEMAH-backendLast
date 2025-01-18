@@ -13,6 +13,7 @@ import {
   sendWhatsAppMessage,
 } from '../../configs/sendgridConfig.js';
 import twilio from 'twilio';
+import NotFoundError from '../../errors/not-found.js';
 
 const client = twilio(
   process.env.TWILIO_ACCOUNT_SID,
@@ -88,6 +89,61 @@ export const clientRegister = async (req, res) => {
     message: 'Verification codes sent to your email and phone number.',
   });
 };
+
+export const resendConfirmationCode = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    throw new BadRequestError('Email is required');
+  }
+
+  const normalizedEmail = email.toLowerCase();
+
+  const client = await prisma.client.findUnique({
+    where: { email: normalizedEmail },
+  });
+
+  if (!client) {
+    throw new NotFoundError('No client found with this email');
+  }
+
+  if (client.isEmailVerified) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      msg: 'Email is already verifed',
+    });
+  }
+
+  const emailVerificationCode = Math.floor(
+    100000 + Math.random() * 900000
+  ).toString();
+  const hashedEmailToken = crypto
+    .createHash('sha256')
+    .update(emailVerificationCode)
+    .digest('hex');
+  const emailTokenExpiration = new Date(Date.now() + 15 * 60 * 1000);
+
+  await prisma.client.update({
+    where: { email: normalizedEmail },
+    data: {
+      emailVerificationToken: hashedEmailToken,
+      emailTokenExpiration,
+    },
+  });
+
+  const emailSubject = 'Your New Verification Code';
+  const emailBody = `
+    <p>Hi ${client.name},</p>
+    <p>Please verify your account using the following code:</p>
+    <h1>${emailVerificationCode}</h1>
+    <p>This code will expire in 15 minutes. If you did not request this, please ignore this email.</p>
+  `;
+  await sendEmail(client.email, emailSubject, emailBody);
+
+  res.status(StatusCodes.OK).json({
+    message: 'New verification code sent to your email.',
+  });
+};
+
 export const verifyWithPhone = async (req, res) => {
   const { phoneNumber } = req.body;
   if (!phoneNumber) {
@@ -209,7 +265,6 @@ export const clientLogin = async (req, res) => {
   }
 
   const clientToken = createTokenUser(client);
-  console.log(clientToken);
   attachCookiesToResponse({ res, user: clientToken });
   res.status(StatusCodes.OK).json({ user: clientToken });
 };

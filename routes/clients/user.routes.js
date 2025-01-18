@@ -5,6 +5,7 @@ import {
   updateClient,
   deleteClient,
   showCurrentClient,
+  updateClientPassword,
 } from '../../controllers/clients/user.controller.js';
 import {
   authenticatedUser,
@@ -18,9 +19,12 @@ router
 
 router.route('/showCurrent').get(authenticatedUser, showCurrentClient);
 router
+  .route('/updatePassword')
+  .patch([authenticatedUser], updateClientPassword);
+router
   .route('/:id')
   .delete([authenticatedUser, authorizePermissions('ADMIN')], deleteClient)
   .get([authenticatedUser, authorizePermissions('ADMIN')], getClientById)
-  .patch([authenticatedUser, authorizePermissions('ADMIN')], updateClient);
+  .patch([authenticatedUser], updateClient);
 
 export default router;

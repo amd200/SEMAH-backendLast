@@ -3,6 +3,9 @@ let prisma = new PrismaClient();
 import { StatusCodes } from 'http-status-codes';
 import BadRequestError from '../../errors/bad-request.js';
 import NotFoundError from '../../errors/not-found.js';
+import checkPermission from '../../utils/checkPermissions.js';
+import bcrypt from 'bcryptjs';
+import UnauthenticatedError from '../../errors/unauthenticated.js';
 
 export const getAllClients = async (req, res) => {
   const clients = await prisma.client.findMany({
@@ -86,6 +89,8 @@ export const updateClient = async (req, res) => {
     throw new NotFoundError('Client not found');
   }
 
+  checkPermission(req.user, client.id);
+
   const updatedClient = await prisma.client.update({
     where: {
       id: clientId,
@@ -111,10 +116,53 @@ export const updateClient = async (req, res) => {
       updatedAt: true,
     },
   });
+
   res.status(StatusCodes.OK).json({
     message: 'Client updated successfully',
     client: updatedClient,
   });
+};
+
+export const updateClientPassword = async (req, res) => {
+  const { currentPassword, newPassword, passwordConfirmation } = req.body;
+  const clientId = req.user.userId;
+
+  if (!currentPassword || !newPassword || !passwordConfirmation) {
+    throw new BadRequestError('Please provide both current and new password');
+  }
+
+  const client = await prisma.client.findUnique({
+    where: { id: clientId },
+  });
+
+  checkPermission(req.user, client.id);
+
+  const isPasswordCorrect = await bcrypt.compare(
+    currentPassword,
+    client.password
+  );
+  if (!isPasswordCorrect) {
+    throw new UnauthenticatedError('Old password is not correct!');
+  }
+
+  if (newPassword !== passwordConfirmation) {
+    throw new BadRequestError(
+      'new password must be same as password confirmation'
+    );
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  const updateClient = await prisma.client.update({
+    where: { id: clientId },
+    data: {
+      password: hashedPassword,
+    },
+  });
+
+  res
+    .status(StatusCodes.OK)
+    .json({ msg: 'Password has been changed successfully!' });
 };
 
 export const deleteClient = async (req, res) => {

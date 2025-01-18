@@ -74,6 +74,9 @@ export const getAllCommissioners = async (req, res) => {
     where: {
       clientId,
     },
+    include: {
+      orders: true,
+    },
   });
 
   res.status(StatusCodes.OK).json({ client });
@@ -87,6 +90,7 @@ export const getCommissionerById = async (req, res) => {
   const { id: commissionerId } = req.params;
   const commissioner = await prisma.commissioner.findFirst({
     where: { id: parseInt(commissionerId) },
+    include: { orders: true },
   });
   if (!commissioner) {
     throw new NotFoundError(`No commissioners Found!`);
