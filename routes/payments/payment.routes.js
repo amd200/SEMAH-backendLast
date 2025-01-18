@@ -9,6 +9,7 @@ import {
   getAllOrders,
   getAllPayments,
   getAuthenticatedUserOrders,
+  getOrderById,
 } from '../../controllers/payments/payment.controller.js';
 import {
   authenticatedUser,
@@ -33,5 +34,7 @@ router
   .get([authenticatedUser, authorizePermissions('ADMIN')], getAllPayments);
 
 router.route('/my-orders').get([authenticatedUser], getAuthenticatedUserOrders);
+
+router.route('/:id').get([authenticatedUser], getOrderById);
 
 export default router;

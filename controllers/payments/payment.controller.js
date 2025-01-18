@@ -292,3 +292,14 @@ export const getAuthenticatedUserOrders = async (req, res) => {
 
   res.status(StatusCodes.OK).json({ orders });
 };
+
+export const getOrderById = async (req, res) => {
+  const { id: orderId } = req.params;
+  const order = await prisma.order.findUnique({
+    where: { id: parseInt(orderId) },
+  });
+  if (!order) {
+    throw new NotFoundError('No orders found with this id');
+  }
+  res.status(StatusCodes.OK).json({ order });
+};
