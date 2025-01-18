@@ -99,7 +99,7 @@ export const removeFromCart = async (req, res) => {
 };
 
 export const checkoutWithStripe = async (req, res) => {
-  const clientId = req.user.userId; // Assuming this is set by authentication middleware
+  const clientId = req.user.userId;
 
   const cartItems = await prisma.cart.findMany({
     where: { clientId },
@@ -125,7 +125,7 @@ export const checkoutWithStripe = async (req, res) => {
     payment_method_types: ['card'],
     payment_method_options: {
       card: {
-        request_three_d_secure: 'any', // Optional for additional security
+        request_three_d_secure: 'any',
       },
     },
     line_items: lineItems,
@@ -133,7 +133,7 @@ export const checkoutWithStripe = async (req, res) => {
     success_url: `${process.env.CLIENT_URL}/api/v1/payments/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${process.env.CLIENT_URL}/payments/cancel`,
     metadata: {
-      clientId, // Pass the clientId
+      clientId,
     },
   });
 
@@ -157,11 +157,9 @@ export const handleSuccess = async (req, res) => {
     throw new BadRequestError('Session ID is missing');
   }
 
-  // Retrieve the Stripe session
   const session = await stripe.checkout.sessions.retrieve(session_id);
-  const clientId = session.metadata.clientId; // Passed during checkout
+  const clientId = session.metadata.clientId;
 
-  // Validate the client
   const client = await prisma.client.findUnique({
     where: { id: clientId },
   });
@@ -169,28 +167,25 @@ export const handleSuccess = async (req, res) => {
     throw new BadRequestError('Invalid client ID');
   }
 
-  // Fetch cart items for the client
   const cartItems = await prisma.cart.findMany({
     where: { clientId },
-    include: { serviceItem: { include: { employees: true } } }, // Include employees
+    include: { serviceItem: { include: { employees: true } } },
   });
 
   if (!cartItems || cartItems.length === 0) {
     throw new BadRequestError('Cart is empty');
   }
 
-  // Calculate the total price
   const totalPrice = cartItems.reduce(
     (sum, item) => sum + item.quantity * item.serviceItem.price,
     0
   );
 
-  // Create the order
   const order = await prisma.order.create({
     data: {
       clientId,
       totalPrice,
-      status: 'PENDING', // Initially pending until payment is confirmed
+      status: 'PENDING',
       orderItems: {
         create: cartItems.map((item) => ({
           serviceItemId: item.serviceItemId,
@@ -204,24 +199,22 @@ export const handleSuccess = async (req, res) => {
   // Create the payment record
   const payment = await prisma.payment.create({
     data: {
-      paymentId: session.payment_intent, // Payment intent ID from Stripe
+      paymentId: session.payment_intent,
       clientId,
       orderId: order.id,
-      provider: 'Stripe', // Example: Stripe as the provider
-      method: session.payment_method_types[0], // e.g., card
-      status: 'SUCCESS', // Mark as success if Stripe succeeded
+      provider: 'Stripe',
+      method: session.payment_method_types[0],
+      status: 'SUCCESS',
       amount: totalPrice,
       currency: 'sar',
     },
   });
 
-  // Update the order status to COMPLETED
   await prisma.order.update({
     where: { id: order.id },
     data: { status: 'PENDING' },
   });
 
-  // Add the client to the purchased ServiceItems and create chats
   const chats = [];
   for (const item of cartItems) {
     const serviceItem = item.serviceItem;
@@ -230,38 +223,38 @@ export const handleSuccess = async (req, res) => {
       continue; // Skip if no employee is associated
     }
 
-    const assignedEmployee = serviceItem.employees[0]; // Assign the first employee
+    const assignedEmployee = serviceItem.employees[0];
 
-    // Create a chat
     const chat = await prisma.chat.create({
       data: {
         serviceItemId: serviceItem.id,
         clientId,
-        employeeId: assignedEmployee.id, // Assign to the first available employee
+        employeeId: assignedEmployee.id,
       },
     });
 
     chats.push(chat);
 
-    // Notify the assigned employee about the new chat
     notifyEmployee(assignedEmployee.id, {
       message: `New chat created for ServiceItem: ${serviceItem.name}`,
       chatId: chat.id,
     });
   }
 
-  // Clear the cart after successful order creation
   await prisma.cart.deleteMany({
     where: { clientId },
   });
 
   // Return the success response
-  res.status(StatusCodes.OK).json({
-    message: 'Order completed successfully',
-    order,
-    payment,
-    chats,
-  });
+  // res.status(StatusCodes.OK).json({
+  //   message: 'Order completed successfully',
+  //   order,
+  //   payment,
+  //   chats,
+  // });
+
+  const redirectUrl = `${process.env.CLIENT_URL}/myOrders/${order.id}`;
+  res.redirect(redirectUrl);
 };
 
 export const getAllOrders = async (req, res) => {
@@ -285,6 +278,11 @@ export const getAuthenticatedUserOrders = async (req, res) => {
     },
     include: {
       commissioners: { select: { id: true, name: true, phoneNumber: true } },
+      orderItems: {
+        select: {
+          serviceItem: true,
+        },
+      },
     },
   });
 
