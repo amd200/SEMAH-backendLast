@@ -53,7 +53,10 @@ app.use(express.json());
 app.use(cookieParser(process.env.JWT_SECRET));
 app.use(
   cors({
-    origin: '*',
+    origin: [
+      'https://main.d3ertum174c9do.amplifyapp.com',
+      'https://semah.basmakhebra.com',
+    ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     credentials: true,
   })
