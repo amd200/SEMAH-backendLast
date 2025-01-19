@@ -18,8 +18,8 @@ const attachCookiesToResponse = ({ res, user }) => {
     expires: new Date(Date.now() + oneDay),
     secure: process.env.NODE_ENV === 'production',
     signed: true,
-    sameSite: 'None',
-    // maxAge: 7 * 24 * 60 * 60 * 1000,
+    sameSite: 'Strict',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 };
 
