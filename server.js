@@ -53,7 +53,12 @@ app.use(express.json());
 app.use(cookieParser(process.env.JWT_SECRET));
 app.use(
   cors({
-    origin: ['https://semah-frontend-9tfz.vercel.app', 'http://localhost:5173'],
+    origin: [
+      'https://semah-frontend-9tfz.vercel.app',
+      'http://localhost:5173',
+      'https://main.d3ertum174c9do.amplifyapp.com/#/login',
+      'https://semah.basmakhebra.com',
+    ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     credentials: true,
   })
