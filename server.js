@@ -56,6 +56,7 @@ app.use(
     origin: [
       'https://main.d3ertum174c9do.amplifyapp.com',
       'https://semah.basmakhebra.com',
+      'http://localhost:5173',
     ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     credentials: true,
