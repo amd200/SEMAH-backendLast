@@ -31,7 +31,11 @@ export const createService = async (req, res) => {
       picture,
     },
   });
+
   await clearCache('services:list');
+  await clearCache('serviceItems:list');
+  await clearCache(`service:${service.id}`);
+  await clearCache(`serviceItem:${serviceItemId}`);
   res.status(StatusCodes.CREATED).json(service);
 };
 
@@ -88,6 +92,9 @@ export const updateService = async (req, res) => {
     },
   });
   await clearCache(`service:${serviceId}`);
+  await clearCache('services:list');
+  await clearCache('serviceItems:list');
+  await clearCache(`service:${service.id}`);
   res.status(StatusCodes.OK).json(updatedService);
 };
 
@@ -107,5 +114,8 @@ export const deleteService = async (req, res) => {
     },
   });
   await clearCache(`service:${serviceId}`);
+  await clearCache('services:list');
+  await clearCache('serviceItems:list');
+  await clearCache(`service:${service.id}`);
   res.status(StatusCodes.OK).json({ message: 'Service deleted successfully' });
 };
