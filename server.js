@@ -53,7 +53,7 @@ app.use(express.json());
 app.use(cookieParser(process.env.JWT_SECRET));
 app.use(
   cors({
-    origin: 'https://semah-frontend.vercel.app',
+    origin: 'https://semah-frontend-9tfz.vercel.app',
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     credentials: true,
   })
