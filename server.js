@@ -56,7 +56,7 @@ app.use(
     origin: [
       'https://semah-frontend-9tfz.vercel.app',
       'http://localhost:5173',
-      'https://main.d3ertum174c9do.amplifyapp.com/',
+      'https://main.d3ertum174c9do.amplifyapp.com',
       'https://semah.basmakhebra.com',
     ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
