@@ -14,7 +14,6 @@ const attachCookiesToResponse = ({ res, user }) => {
   const oneDay = 1000 * 60 * 60 * 24;
 
   res.cookie('token', token, {
-    domain: 'semah-frontend.vercel.app',
     path: '/',
     httpOnly: true,
     expires: new Date(Date.now() + oneDay),
