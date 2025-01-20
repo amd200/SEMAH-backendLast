@@ -48,6 +48,7 @@ import chatRoutes from './routes/chats/chat.routes.js';
 import consultationRoutes from './routes/appointments/consultation.routes.js';
 import appointmentRoutes from './routes/appointments/appointment.routes.js';
 
+app.set('trust proxy', 1);
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(cookieParser(process.env.JWT_SECRET));
