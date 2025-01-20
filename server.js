@@ -61,6 +61,7 @@ app.use(
     ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     credentials: true,
+    exposedHeaders: ['Set-Cookie'],
   })
 );
 app.use(
