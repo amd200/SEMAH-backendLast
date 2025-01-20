@@ -54,7 +54,7 @@ app.use(cookieParser(process.env.JWT_SECRET));
 app.use(
   cors({
     origin: [
-      'https://main.d3ertum174c9do.amplifyapp.com',
+      'https://semah-frontend.vercel.app/',
       'https://semah.basmakhebra.com',
       'http://localhost:5173',
     ],
