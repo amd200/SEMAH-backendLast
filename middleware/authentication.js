@@ -2,17 +2,20 @@ import { isTokenValid } from '../utils/jwt.js';
 import UnauthenticatedError from '../errors/unauthenticated.js';
 import UnauthorizedError from '../errors/unauthorized.js';
 
-export const  authenticatedUser = async (req, res, next) => {
+export const authenticatedUser = async (req, res, next) => {
   const token = req.signedCookies.token;
 
   if (!token) {
+    console.error('No token found in signed cookies');
     throw new UnauthenticatedError('Authentication Invalid');
   }
+
   try {
-    const { name, userId, role } = isTokenValid({ token });
-    req.user = { name, userId, role };
+    const { user } = isTokenValid({ token });
+    req.user = user;
     next();
   } catch (error) {
+    console.error('Error validating token:', error.message);
     throw new UnauthenticatedError('Authentication Invalid');
   }
 };

@@ -13,9 +13,11 @@ import {
 } from '../../middleware/authentication.js';
 const router = express.Router();
 
-router.route('/').get([authenticatedUser], getAllClients);
+router
+  .route('/')
+  .get([authenticatedUser, authorizePermissions('ADMIN')], getAllClients);
 
-router.route('/showCurrent').get(authenticatedUser, showCurrentClient);
+router.route('/showCurrent').get([authenticatedUser], showCurrentClient);
 router
   .route('/updatePassword')
   .patch([authenticatedUser], updateClientPassword);
