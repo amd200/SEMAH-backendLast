@@ -54,11 +54,7 @@ app.use(express.json());
 app.use(cookieParser(process.env.JWT_SECRET));
 app.use(
   cors({
-    origin: [
-      'https://semah-frontend-p4ky.vercel.app',
-      'https://semah.basmakhebra.com',
-      'http://localhost:5173',
-    ],
+    origin: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     credentials: true,
     exposedHeaders: ['Set-Cookie'],
