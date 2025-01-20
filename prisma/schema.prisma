@@ -52,7 +52,19 @@ model Client {
   payments Payment[]
   chats Chat[]
   commissioner Commissioner[]
+  tokens Token[]
   role Role @default(CLIENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Token {
+  id Int @id @default(autoincrement())
+  refreshToken String
+  ip String
+  isValid Boolean @default(true)
+  client Client @relation(fields: [clientId], references: [id])
+  clientId String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
