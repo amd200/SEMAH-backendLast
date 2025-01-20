@@ -54,7 +54,7 @@ app.use(cookieParser(process.env.JWT_SECRET));
 app.use(
   cors({
     origin: [
-      'https://semah-frontend.vercel.app/',
+      'https://semah-frontend.vercel.app',
       'https://semah.basmakhebra.com',
       'http://localhost:5173',
     ],
