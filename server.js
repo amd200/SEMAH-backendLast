@@ -51,11 +51,11 @@ import appointmentRoutes from './routes/appointments/appointment.routes.js';
 app.set('trust proxy', 1);
 app.use(morgan('dev'));
 app.use(express.json());
-app.use(cookieParser('jwt-secret'));
+app.use(cookieParser(process.env.JWT_SECRET));
 app.use(
   cors({
     origin: [
-      'https://semah-frontend.vercel.app',
+      'https://semah-frontend-6ant.vercel.app',
       'https://semah.basmakhebra.com',
       'http://localhost:5173',
     ],
