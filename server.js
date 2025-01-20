@@ -51,7 +51,7 @@ import appointmentRoutes from './routes/appointments/appointment.routes.js';
 app.set('trust proxy', 1);
 app.use(morgan('dev'));
 app.use(express.json());
-app.use(cookieParser(process.env.JWT_SECRET));
+app.use(cookieParser('jwt-secret'));
 app.use(
   cors({
     origin: [
