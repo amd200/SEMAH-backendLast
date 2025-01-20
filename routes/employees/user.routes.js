@@ -16,7 +16,7 @@ router
   .route('/')
   .get([authenticatedUser, authorizePermissions('ADMIN')], getAllEmployees);
 
-router.route('/showCurrent').get(authenticatedUser, showCurrentEmployee);
+router.route('/showCurrent').get([authenticatedUser], showCurrentEmployee);
 router
   .route('/:id')
   .get([authenticatedUser, authorizePermissions('ADMIN')], getEmployeeById)

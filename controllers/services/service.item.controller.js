@@ -180,12 +180,10 @@ export const updateServiceItem = async (req, res) => {
     clientIds,
   } = req.body;
 
-  // Validate input
   if (!name && !price && !stages && !duration && !activity && !serviceId) {
     throw new BadRequestError('No fields provided for update');
   }
 
-  // Fetch the existing ServiceItem
   const existingServiceItem = await prisma.serviceItem.findUnique({
     where: {
       id: parseInt(serviceItemId, 10),
@@ -197,46 +195,16 @@ export const updateServiceItem = async (req, res) => {
 
   let employeeConnections = undefined;
   if (employeeIds) {
-    if (employeeIds.length > 0) {
-      const employees = await prisma.employee.findMany({
-        where: {
-          id: { in: employeeIds },
-        },
-      });
-
-      if (employees.length !== employeeIds.length) {
-        throw new NotFoundError('Some employees not found');
-      }
-
-      employeeConnections = employeeIds.map((id) => ({ id }));
-    } else {
-      // If employeeIds is an empty array, clear the employees connection
-      employeeConnections = [];
-    }
+    employeeConnections =
+      employeeIds.length > 0 ? employeeIds.map((id) => ({ id })) : [];
   }
 
-  // Prepare connections for clients if provided
   let clientConnections = undefined;
   if (clientIds) {
-    if (clientIds.length > 0) {
-      const clients = await prisma.client.findMany({
-        where: {
-          id: { in: clientIds },
-        },
-      });
-
-      if (clients.length !== clientIds.length) {
-        throw new NotFoundError('Some clients not found');
-      }
-
-      clientConnections = clientIds.map((id) => ({ id }));
-    } else {
-      // If clientIds is an empty array, clear the clients connection
-      clientConnections = [];
-    }
+    clientConnections =
+      clientIds.length > 0 ? clientIds.map((id) => ({ id })) : [];
   }
 
-  // Update the ServiceItem
   const updatedServiceItem = await prisma.serviceItem.update({
     where: {
       id: parseInt(serviceItemId, 10),
@@ -263,14 +231,19 @@ export const updateServiceItem = async (req, res) => {
     },
   });
 
+  // Clear related caches
+  await clearCache(`serviceItem:${serviceItemId}`);
+  if (existingServiceItem.serviceId) {
+    await clearCache(`service:${existingServiceItem.serviceId}`);
+  }
+  if (serviceId) {
+    await clearCache(`service:${serviceId}`);
+  }
   await clearCache('services:list');
   await clearCache('serviceItems:list');
-  await clearCache(`serviceItem:${serviceId}`);
-  await clearCache(`service:${serviceId}`);
 
   res.status(StatusCodes.OK).json(updatedServiceItem);
 };
-
 export const deleteServiceItem = async (req, res) => {
   const { id: serviceItemId } = req.params;
 
@@ -289,10 +262,12 @@ export const deleteServiceItem = async (req, res) => {
     },
   });
 
+  await clearCache(`serviceItem:${serviceItemId}`);
+  if (serviceItem.serviceId) {
+    await clearCache(`service:${serviceItem.serviceId}`);
+  }
   await clearCache('services:list');
   await clearCache('serviceItems:list');
-  await clearCache(`serviceItem:${serviceId}`);
-  await clearCache(`service:${serviceId}`);
 
   res
     .status(StatusCodes.OK)
