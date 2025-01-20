@@ -13,6 +13,8 @@ import {
   forgetPassword,
   resetPassword,
   resendConfirmationCode,
+  forgetPasswordEmail,
+  resetPasswordEmail,
 } from '../../controllers/clients/auth.controller.js';
 import {
   authenticatedUser,
@@ -51,6 +53,17 @@ router.post(
   confirmWhatsAppVerification
 );
 
-router.post('/forget-password', validate(clientForgetPassword), forgetPassword);
-router.post('/reset-password', validate(clientResetPassword), resetPassword);
+router.post(
+  '/forget-password-phone',
+  validate(clientForgetPassword),
+  forgetPassword
+);
+router.post(
+  '/reset-password-phone',
+  validate(clientResetPassword),
+  resetPassword
+);
+
+router.post('/forget-password-email', forgetPasswordEmail);
+router.post('/reset-password-email', resetPasswordEmail);
 export default router;

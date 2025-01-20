@@ -79,7 +79,7 @@ export const updateEmployee = async (req, res) => {
       updatedAt: true,
     },
   });
-  res.status(StatusCodes.OK).json(updatedEmployee);
+  res.status(StatusCodes.OK).json({ user: updatedEmployee });
 };
 
 export const deleteEmployee = async (req, res) => {

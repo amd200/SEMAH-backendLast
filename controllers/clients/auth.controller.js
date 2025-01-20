@@ -478,3 +478,88 @@ export const resetPassword = async (req, res) => {
     .status(StatusCodes.OK)
     .json({ message: 'Password updated successfully', updatedUser });
 };
+
+export const forgetPasswordEmail = async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    throw new BadRequestError('Please provide a valid email!');
+  }
+  const client = await prisma.client.findUnique({
+    where: { email },
+  });
+  if (!client) {
+    throw new BadRequestError('No email found with this email');
+  }
+
+  const emailVerificationCode = Math.floor(
+    100000 + Math.random() * 900000
+  ).toString();
+  const hashedEmailToken = crypto
+    .createHash('sha256')
+    .update(emailVerificationCode)
+    .digest('hex');
+  const emailTokenExpiration = new Date(Date.now() + 15 * 60 * 1000);
+
+  await prisma.client.update({
+    where: { email },
+    data: {
+      emailVerificationToken: hashedEmailToken,
+      emailTokenExpiration,
+    },
+  });
+
+  const emailSubject = 'Your Password Reset Verification Code';
+  const emailBody = `
+    <p>Hi ${client.name},</p>
+    <p>You requested a password reset. Please use the following verification code to proceed:</p>
+    <h1>${emailVerificationCode}</h1>
+    <p>This code will expire in 15 minutes. If you did not request this, please ignore this email.</p>
+  `;
+
+  await sendEmail(client.email, emailSubject, emailBody);
+
+  res.status(StatusCodes.OK).json({
+    message: 'A verification code has been sent to your email.',
+  });
+};
+
+export const resetPasswordEmail = async (req, res) => {
+  const { email, token, newPassword } = req.body;
+  if (!email || !token || !newPassword) {
+    throw new BadRequestError('Please provide all required fields');
+  }
+
+  const normalizedEmail = email.toLowerCase();
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+  const client = await prisma.client.findFirst({
+    where: {
+      email: normalizedEmail,
+      emailVerificationToken: hashedToken,
+      emailTokenExpiration: {
+        gt: new Date(),
+      },
+    },
+  });
+
+  if (!client) {
+    throw new BadRequestError('Invalid or expired token');
+  }
+
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+  await prisma.client.update({
+    where: { email: normalizedEmail },
+    data: {
+      password: hashedPassword,
+      emailVerificationToken: null,
+      emailTokenExpiration: null,
+    },
+  });
+
+  res.status(StatusCodes.OK).json({
+    message:
+      'Password reset successfully. You can now log in with your new password.',
+  });
+};

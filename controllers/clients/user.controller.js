@@ -119,7 +119,7 @@ export const updateClient = async (req, res) => {
 
   res.status(StatusCodes.OK).json({
     message: 'Client updated successfully',
-    client: updatedClient,
+    user: updatedClient,
   });
 };
 
@@ -149,6 +149,10 @@ export const updateClientPassword = async (req, res) => {
     throw new BadRequestError(
       'new password must be same as password confirmation'
     );
+  }
+
+  if (newPassword.length < 6 && passwordConfirmation.length < 6) {
+    throw new BadRequestError('Password must be 6 characters at least');
   }
 
   const hashedPassword = await bcrypt.hash(newPassword, 10);
