@@ -19,6 +19,7 @@ const attachCookiesToResponse = ({ res, user }) => {
     secure: process.env.NODE_ENV === 'production',
     signed: true,
     maxAge: 7 * 24 * 60 * 60 * 1000,
+    sameSite: 'lax',
   });
 };
 
