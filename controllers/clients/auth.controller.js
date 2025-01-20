@@ -303,6 +303,8 @@ export const clientLoginWithPhone = async (req, res) => {
 export const logout = async (req, res) => {
   res.cookie('token', 'logout', {
     httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
     expires: new Date(Date.now() + 1 * 1000),
   });
   res
