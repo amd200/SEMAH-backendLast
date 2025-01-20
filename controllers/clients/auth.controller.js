@@ -263,42 +263,10 @@ export const clientLogin = async (req, res) => {
   if (!isPasswordCorrect) {
     throw new UnauthenticatedError('Invalid Credentials');
   }
+
   const clientToken = createTokenUser(client);
-
-  let refreshToken = '';
-  const existingToken = await prisma.token.findFirst({
-    where: { clientId: client.id },
-  });
-  if (existingToken) {
-    const { isValid } = existingToken;
-    if (!isValid) {
-      throw new UnauthenticatedError('Invalid Credentials');
-    }
-    refreshToken = existingToken.refreshToken;
-    attachCookiesToResponse({ res, user: clientToken, refreshToken });
-    res.status(StatusCodes.OK).json({ user: clientToken });
-    return;
-  }
-
-  refreshToken = crypto.randomBytes(40).toString('hex');
-  const userAgent = req.headers['user-agent'];
-  const ip = req.ip;
-  const userToken = { refreshToken, ip, userAgent, user: client.id };
-
-  await prisma.token.create({
-    data: {
-      refreshToken,
-      ip,
-      clientId: client.id,
-    },
-  });
-
-  attachCookiesToResponse({ res, user: clientToken, refreshToken });
+  attachCookiesToResponse({ res, user: clientToken });
   res.status(StatusCodes.OK).json({ user: clientToken });
-
-  // const clientToken = createTokenUser(client);
-  // attachCookiesToResponse({ res, user: clientToken });
-  // res.status(StatusCodes.OK).json({ user: clientToken });
 };
 
 export const clientLoginWithPhone = async (req, res) => {
