@@ -130,7 +130,7 @@ export const checkoutWithStripe = async (req, res) => {
     },
     line_items: lineItems,
     mode: 'payment',
-    success_url: `http://localhost:3000/api/v1/payments/success?session_id={CHECKOUT_SESSION_ID}`,
+    success_url: `${process.env.BACKEND_URL}/payments/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${process.env.CLIENT_URL}/payments/cancel`,
     metadata: {
       clientId,
@@ -309,5 +309,6 @@ export const getOrderById = async (req, res) => {
   if (!order) {
     throw new NotFoundError('No orders found with this id');
   }
+
   res.status(StatusCodes.OK).json({ order });
 };
