@@ -253,7 +253,7 @@ export const handleSuccess = async (req, res) => {
   //   chats,
   // });
 
-  const redirectUrl = `${process.env.CLIENT_URL}/myOrders/${order.id}`;
+  const redirectUrl = `${process.env.FRONTEND_URL}/myOrders/${order.id}`;
   res.redirect(redirectUrl);
 };
 
