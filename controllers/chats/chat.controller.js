@@ -128,6 +128,9 @@ export const sendMessage = async (req, res) => {
     },
   });
 
+  console.log(chat.commissionerId);
+  console.log(sender);
+
   const io = req.app.get('io');
   if (io) {
     const x = chatId;

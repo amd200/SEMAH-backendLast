@@ -91,6 +91,7 @@ export const showCurrentCommissioner = async (req, res) => {
   const commissioner = await prisma.commissioner.findUnique({
     where: { id: commissionerId },
     select: {
+      id: true,
       name: true,
       identityNumber: true,
       phoneNumber: true,
