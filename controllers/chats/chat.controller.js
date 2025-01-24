@@ -17,6 +17,7 @@ export const getChats = async (req, res) => {
         serviceItem: { select: { name: true } },
         employee: { select: { name: true, email: true } },
         appointment: true,
+        client: { select: { commissioner: true } },
       },
     });
 
@@ -35,9 +36,33 @@ export const getChats = async (req, res) => {
         client: { select: { name: true, email: true } },
       },
     });
+    return res.status(StatusCodes.OK).json(chats);
+  }
+
+  const commissioner = await prisma.commissioner.findUnique({
+    where: { id: userId },
+    include: { orders: true },
+  });
+
+  if (commissioner) {
+    const clientIds = commissioner.orders.map((order) => order.clientId);
+
+    const chats = await prisma.chat.findMany({
+      where: {
+        clientId: { in: clientIds },
+      },
+      include: {
+        serviceItem: { select: { name: true } },
+        employee: { select: { name: true, email: true } },
+        appointment: true,
+        client: { select: { name: true, email: true } },
+      },
+    });
 
     return res.status(StatusCodes.OK).json(chats);
   }
+
+  throw new BadRequestError('User not found or not authorized to access chats');
 };
 
 export const getMessages = async (req, res) => {

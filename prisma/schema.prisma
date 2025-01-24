@@ -70,7 +70,7 @@ model Token {
 }
 
 model Commissioner {
-  id Int @id @default(autoincrement())
+  id String @id @default(uuid())
   name String
   identityNumber String
   phoneNumber String

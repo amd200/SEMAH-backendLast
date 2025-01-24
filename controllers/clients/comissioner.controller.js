@@ -46,6 +46,10 @@ export const loginCommissioner = async (req, res) => {
     where: { phoneNumber },
   });
 
+  if (!commissioner) {
+    throw new UnauthenticatedError('Invalid Credentials');
+  }
+
   // Comparing passwords
   const isPasswordCorrect = await bcrypt.compare(
     password,
@@ -89,7 +93,7 @@ export const getCommissionerById = async (req, res) => {
   }
   const { id: commissionerId } = req.params;
   const commissioner = await prisma.commissioner.findFirst({
-    where: { id: parseInt(commissionerId) },
+    where: { id: commissionerId },
     include: { orders: true },
   });
   if (!commissioner) {
@@ -108,7 +112,7 @@ export const updateCommissioner = async (req, res) => {
   }
   const { id: commissionerId } = req.params;
   const commissioner = await prisma.commissioner.findFirst({
-    where: { id: parseInt(commissionerId) },
+    where: { id: commissionerId },
   });
   if (!commissioner) {
     throw new NotFoundError(`No commissioners Found!`);
@@ -138,7 +142,7 @@ export const updateCommissioner = async (req, res) => {
   });
 
   const isCommissionerAssociated = client.commissioner.some(
-    (commissioner) => commissioner.id === parseInt(commissionerId, 10)
+    (commissioner) => commissioner.id === commissionerId
   );
 
   if (!isCommissionerAssociated) {
@@ -148,7 +152,7 @@ export const updateCommissioner = async (req, res) => {
   }
 
   const updateCommissioner = await prisma.commissioner.update({
-    where: { id: parseInt(commissionerId) },
+    where: { id: commissionerId },
     data: updateData,
   });
   res.status(StatusCodes.OK).json({ updateCommissioner });
@@ -161,7 +165,7 @@ export const deleteCommissioner = async (req, res) => {
   }
   const { id: commissionerId } = req.params;
   const commissioner = await prisma.commissioner.findFirst({
-    where: { id: parseInt(commissionerId) },
+    where: { id: commissionerId },
   });
   if (!commissioner) {
     throw new NotFoundError(`No commissioners Found!`);
@@ -173,7 +177,7 @@ export const deleteCommissioner = async (req, res) => {
   });
 
   const isCommissionerAssociated = client.commissioner.some(
-    (commissioner) => commissioner.id === parseInt(commissionerId, 10)
+    (commissioner) => commissioner.id === commissionerId
   );
 
   if (!isCommissionerAssociated) {
@@ -183,7 +187,7 @@ export const deleteCommissioner = async (req, res) => {
   }
 
   const deleteCommissioner = await prisma.commissioner.delete({
-    where: { id: parseInt(commissionerId) },
+    where: { id: commissionerId },
   });
 
   res.status(StatusCodes.OK).json({ msg: 'Commissioner has beed deleted!' });
@@ -195,7 +199,7 @@ export const assignCommissionerToOrder = async (req, res) => {
   }
 
   const commissioner = await prisma.commissioner.findUnique({
-    where: { id: parseInt(commissionerId, 10) },
+    where: { id: commissionerId },
   });
 
   if (!commissioner) {
@@ -214,7 +218,7 @@ export const assignCommissionerToOrder = async (req, res) => {
     where: { id: parseInt(orderId, 10) },
     data: {
       commissioners: {
-        connect: { id: parseInt(commissionerId, 10) },
+        connect: { id: commissionerId },
       },
     },
   });
