@@ -16,6 +16,7 @@ export const getChats = async (req, res) => {
       include: {
         serviceItem: { select: { name: true } },
         employee: { select: { name: true, email: true } },
+        appointment: true,
       },
     });
 

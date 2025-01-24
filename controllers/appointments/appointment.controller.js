@@ -61,8 +61,6 @@ export const createAppointment = async (req, res) => {
       date: new Date(date).toISOString(),
     },
   });
-
-  res.status(StatusCodes.CREATED).json({ appointment });
 };
 
 export const handlePaidAppointment = async (req, res) => {
@@ -110,6 +108,7 @@ export const handlePaidAppointment = async (req, res) => {
             serviceItemId: null,
             priceAtTime: consultation.price,
             quantity: 1,
+            consultationId: consultation.id,
           },
         ],
       },
@@ -144,6 +143,7 @@ export const handlePaidAppointment = async (req, res) => {
       serviceItemId: null,
       clientId,
       employeeId: assignedEmployee.id,
+      appointmentId: appointment.id,
     },
   });
 

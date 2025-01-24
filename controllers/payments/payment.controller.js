@@ -281,6 +281,7 @@ export const getAuthenticatedUserOrders = async (req, res) => {
       orderItems: {
         select: {
           serviceItem: true,
+          consultation: true,
         },
       },
     },
