@@ -3,6 +3,7 @@ import {
   createAppointment,
   getAllAppointments,
   getAppointmentById,
+  handlePaidAppointment,
 } from '../../controllers/appointments/appointment.controller.js';
 import {
   authenticatedUser,
@@ -10,6 +11,7 @@ import {
 } from '../../middleware/authentication.js';
 const router = express.Router();
 
+router.route('/success').get([authenticatedUser], handlePaidAppointment);
 router
   .route('/')
   .post([authenticatedUser], createAppointment)

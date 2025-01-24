@@ -5,12 +5,30 @@ import BadRequestError from '../../errors/bad-request.js';
 import NotFoundError from '../../errors/not-found.js';
 
 export const createConsultation = async (req, res) => {
-  const { name } = req.body;
+  const { name, employees, price } = req.body;
+
   if (!name) {
     throw new BadRequestError('Please provide a valid consultation name!');
   }
+  const validEmployees = await prisma.employee.findMany({
+    where: { id: { in: employees } },
+  });
+
+  if (validEmployees.length !== employees.length) {
+    throw new BadRequestError('Some employee IDs are invalid!');
+  }
+
   const consultation = await prisma.consultation.create({
-    data: { name },
+    data: {
+      name,
+      employees: {
+        connect: employees.map((id) => ({ id })),
+      },
+      price,
+    },
+    include: {
+      employees: { select: { id: true, name: true } },
+    },
   });
   res.status(StatusCodes.CREATED).json({ consultation });
 };

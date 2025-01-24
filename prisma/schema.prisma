@@ -99,6 +99,7 @@ model Employee {
   role Role @default(EMPLOYEE)
   services ServiceItem[]
   chats Chat[]
+  consultations Consultation[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -201,8 +202,8 @@ model OrderItem {
   id Int @id @default(autoincrement())
   order Order @relation(fields: [orderId], references: [id])
   orderId Int
-  serviceItem ServiceItem @relation(fields: [serviceItemId], references: [id])
-  serviceItemId Int
+  serviceItem ServiceItem? @relation(fields: [serviceItemId], references: [id])
+  serviceItemId Int?
   priceAtTime Float
   quantity Int @default(1)
   createdAt DateTime @default(now())
@@ -212,8 +213,8 @@ model OrderItem {
 
 model Chat {
   id          Int       @id @default(autoincrement())
-  serviceItem ServiceItem @relation(fields: [serviceItemId], references: [id])
-  serviceItemId Int
+  serviceItem ServiceItem? @relation(fields: [serviceItemId], references: [id])
+  serviceItemId Int?
   client      Client    @relation(fields: [clientId], references: [id])
   clientId    String
   employee    Employee  @relation(fields: [employeeId], references: [id])
@@ -247,6 +248,8 @@ model Consultation {
   id Int @id @default(autoincrement())
   name String
   Appointments Appointment[]
+  employees Employee[]
+  price Float @default(0)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
