@@ -209,10 +209,11 @@ export const deleteCommissioner = async (req, res) => {
 
   res.status(StatusCodes.OK).json({ msg: 'Commissioner has beed deleted!' });
 };
-export const assignCommissionerToOrder = async (req, res) => {
-  const { commissionerId, orderId } = req.body;
-  if (!commissionerId || !orderId) {
-    throw new BadRequestError('Please provide commissionerId and orderId');
+export const assignCommissionerToChat = async (req, res) => {
+  const { commissionerId, chatId } = req.body;
+
+  if (!commissionerId || !chatId) {
+    throw new BadRequestError('Please provide commissionerId and chatId');
   }
 
   const commissioner = await prisma.commissioner.findUnique({
@@ -223,18 +224,18 @@ export const assignCommissionerToOrder = async (req, res) => {
     throw new NotFoundError('Commissioner not found');
   }
 
-  const order = await prisma.order.findUnique({
-    where: { id: parseInt(orderId, 10) },
+  const chat = await prisma.chat.findUnique({
+    where: { id: parseInt(chatId, 10) },
   });
 
-  if (!order) {
-    throw new NotFoundError('Order not found');
+  if (!chat) {
+    throw new NotFoundError('Chat not found');
   }
 
-  await prisma.order.update({
-    where: { id: parseInt(orderId, 10) },
+  const updatedChat = await prisma.chat.update({
+    where: { id: parseInt(chatId, 10) },
     data: {
-      commissioners: {
+      commissioner: {
         connect: { id: commissionerId },
       },
     },
@@ -242,5 +243,5 @@ export const assignCommissionerToOrder = async (req, res) => {
 
   res
     .status(StatusCodes.OK)
-    .json({ message: 'Commissioner assigned to order', order });
+    .json({ message: 'Commissioner assigned to chat', chat: updatedChat });
 };

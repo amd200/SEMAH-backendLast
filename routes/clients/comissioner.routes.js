@@ -6,7 +6,7 @@ import {
   getCommissionerById,
   updateCommissioner,
   deleteCommissioner,
-  assignCommissionerToOrder,
+  assignCommissionerToChat,
   showCurrentCommissioner,
 } from '../../controllers/clients/comissioner.controller.js';
 import { authenticatedUser } from '../../middleware/authentication.js';
@@ -22,7 +22,7 @@ router
   .route('/create')
   .post([authenticatedUser], validate(commissionerSchema), createCommissioner);
 
-router.route('/assign').post([authenticatedUser], assignCommissionerToOrder);
+router.route('/assign').post([authenticatedUser], assignCommissionerToChat);
 router
   .route('/login')
   .post(validate(commissionerLoginSchema), loginCommissioner);

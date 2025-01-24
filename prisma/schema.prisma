@@ -79,6 +79,7 @@ model Commissioner {
   client Client @relation(fields: [clientId], references: [id])
   clientId String
   orders Order[]
+  chats Chat[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -223,6 +224,8 @@ model Chat {
   clientId    String
   employee    Employee  @relation(fields: [employeeId], references: [id])
   employeeId  String
+  commissioner Commissioner? @relation(fields: [commissionerId], references: [id])
+  commissionerId String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   messages    Message[]

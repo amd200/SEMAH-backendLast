@@ -41,15 +41,12 @@ export const getChats = async (req, res) => {
 
   const commissioner = await prisma.commissioner.findUnique({
     where: { id: userId },
-    include: { orders: true },
   });
 
   if (commissioner) {
-    const clientIds = commissioner.orders.map((order) => order.clientId);
-
     const chats = await prisma.chat.findMany({
       where: {
-        clientId: { in: clientIds },
+        commissionerId: userId,
       },
       include: {
         serviceItem: { select: { name: true } },
@@ -61,7 +58,6 @@ export const getChats = async (req, res) => {
 
     return res.status(StatusCodes.OK).json(chats);
   }
-
   throw new BadRequestError('User not found or not authorized to access chats');
 };
 
