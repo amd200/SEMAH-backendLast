@@ -86,6 +86,23 @@ export const getAllCommissioners = async (req, res) => {
   res.status(StatusCodes.OK).json({ client });
 };
 
+export const showCurrentCommissioner = async (req, res) => {
+  const commissionerId = req.user.userId;
+  const commissioner = await prisma.commissioner.findUnique({
+    where: { id: commissionerId },
+    select: {
+      name: true,
+      identityNumber: true,
+      phoneNumber: true,
+      clientId: true,
+    },
+  });
+  if (!commissioner) {
+    throw new BadRequestError('No commissioner logged in!');
+  }
+  res.status(StatusCodes.OK).json({ commissioner });
+};
+
 export const getCommissionerById = async (req, res) => {
   const clientId = req.user.userId;
   if (!req.user.role) {

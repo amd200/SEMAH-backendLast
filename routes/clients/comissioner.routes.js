@@ -7,6 +7,7 @@ import {
   updateCommissioner,
   deleteCommissioner,
   assignCommissionerToOrder,
+  showCurrentCommissioner,
 } from '../../controllers/clients/comissioner.controller.js';
 import { authenticatedUser } from '../../middleware/authentication.js';
 import { validate } from '../../middleware/validation.js';
@@ -16,6 +17,7 @@ import {
 } from '../../utils/validation/commissioner.validation.js';
 const router = express.Router();
 
+router.route('/showCurrent').get([authenticatedUser], showCurrentCommissioner);
 router
   .route('/create')
   .post([authenticatedUser], validate(commissionerSchema), createCommissioner);
