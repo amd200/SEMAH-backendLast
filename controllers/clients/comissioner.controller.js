@@ -100,7 +100,7 @@ export const showCurrentCommissioner = async (req, res) => {
   if (!commissioner) {
     throw new BadRequestError('No commissioner logged in!');
   }
-  res.status(StatusCodes.OK).json({ commissioner });
+  res.status(StatusCodes.OK).json(commissioner);
 };
 
 export const getCommissionerById = async (req, res) => {
