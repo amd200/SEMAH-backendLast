@@ -53,6 +53,7 @@ model Client {
   chats Chat[]
   commissioner Commissioner[]
   tokens Token[]
+  appointments Appointment[]
   role Role @default(CLIENT)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -245,6 +246,8 @@ model Appointment {
   appointmentSubject AppointmentSubjects
   consultationType Consultation? @relation(fields: [consultationId], references: [id])
   consultationId Int?
+  client Client? @relation(fields: [clientId], references: [id])
+  clientId String?
   appointmentType AppointmentTypes
   date DateTime
   chats Chat[]

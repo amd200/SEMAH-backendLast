@@ -59,8 +59,10 @@ export const createAppointment = async (req, res) => {
       consultationId: parseInt(consultationId),
       appointmentType,
       date: new Date(date).toISOString(),
+      clientId: req.user.userId,
     },
   });
+  res.status(StatusCodes.OK).json({ appointment });
 };
 
 export const handlePaidAppointment = async (req, res) => {
@@ -134,6 +136,7 @@ export const handlePaidAppointment = async (req, res) => {
       consultationId: parseInt(consultationId, 10),
       appointmentType,
       date: new Date(date).toISOString(),
+      clientId: req.user.userId,
     },
   });
 
@@ -166,4 +169,17 @@ export const getAppointmentById = async (req, res) => {
     throw new NotFoundError('No appointments found with this id');
   }
   res.status(StatusCodes.OK).json({ appointment });
+};
+
+export const getAllAuthenticatedAppointments = async (req, res) => {
+  const userId = req.user.userId;
+  const appointments = await prisma.appointment.findMany({
+    where: {
+      clientId: userId,
+    },
+  });
+  if (!appointments) {
+    throw new BadRequestError('No appointments found!');
+  }
+  res.status(StatusCodes.OK).json({ appointments });
 };
