@@ -112,7 +112,8 @@ export const sendMessage = async (req, res) => {
   if (
     role !== 'ADMIN' &&
     sender !== chat.clientId &&
-    sender !== chat.employeeId
+    sender !== chat.employeeId &&
+    sender !== chat.commissionerId
   ) {
     throw new BadRequestError(
       'You are not authorized to send messages in this chat'
