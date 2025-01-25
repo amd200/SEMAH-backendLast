@@ -235,11 +235,29 @@ export const handleSuccess = async (req, res) => {
 
     chats.push(chat);
 
+    const employeeOrderNotification = `There's a new order with id: ${order.id} has been placed!`;
+
+    const employeeNotification = await prisma.notification.create({
+      data: {
+        content: employeeOrderNotification,
+        employeeId: assignedEmployee.id,
+      },
+    });
+
     notifyEmployee(assignedEmployee.id, {
       message: `New chat created for ServiceItem: ${serviceItem.name}`,
       chatId: chat.id,
     });
   }
+
+  const clientOrderNotification = `Your order with id ${order.id} has been completed successfully!`;
+
+  const clientNotification = await prisma.notification.create({
+    data: {
+      content: clientOrderNotification,
+      clientId,
+    },
+  });
 
   await prisma.cart.deleteMany({
     where: { clientId },

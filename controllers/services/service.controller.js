@@ -35,7 +35,6 @@ export const createService = async (req, res) => {
   await clearCache('services:list');
   await clearCache('serviceItems:list');
   await clearCache(`service:${service.id}`);
-  await clearCache(`serviceItem:${serviceItemId}`);
   res.status(StatusCodes.CREATED).json(service);
 };
 
@@ -95,7 +94,7 @@ export const updateService = async (req, res) => {
   await clearCache('services:list');
   await clearCache('serviceItems:list');
   await clearCache(`service:${service.id}`);
-  
+
   res.status(StatusCodes.OK).json(updatedService);
 };
 

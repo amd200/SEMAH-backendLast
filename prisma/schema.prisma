@@ -55,6 +55,7 @@ model Client {
   commissioner Commissioner[]
   tokens Token[]
   appointments Appointment[]
+  notifications Notification[]
   role Role @default(CLIENT)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -112,6 +113,7 @@ model Employee {
   chats Chat[]
   consultations Consultation[]
   tokens Token[]
+  notifications Notification[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -249,6 +251,16 @@ model Message {
   sender    String
   content   String
   createdAt DateTime @default(now())
+}
+
+model Notification {
+  id Int @id @default(autoincrement())
+  content String
+  client Client? @relation(fields: [clientId], references: [id])
+  clientId String?
+  employee Employee? @relation(fields: [employeeId], references: [id])
+  employeeId String?
+  createdAt   DateTime  @default(now())
 }
 
 model Appointment {
