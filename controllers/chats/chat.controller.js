@@ -147,18 +147,8 @@ export const sendMessage = async (req, res) => {
     },
   });
 
-  const io = req.app.get('io');
-  if (io) {
-    const x = chatId;
-    // Emit the message to all clients in the specified chat room
-    io.to(Number(chatId)).emit('receive-message', {
-      content,
-      sender: sender,
-      chatId: chatId,
-      createdAt: message.createdAt,
-    });
-    console.log('Message sent successfully');
-  }
+  
+  
 
   res.status(StatusCodes.CREATED).json(message);
 };
