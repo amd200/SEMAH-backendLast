@@ -8,6 +8,7 @@ import UnauthenticatedError from '../../errors/unauthenticated.js';
 import createTokenUser from '../../utils/createTokenUser.js';
 import { attachCookiesToResponse } from '../../utils/jwt.js';
 import UnauthorizedError from '../../errors/unauthorized.js';
+import { token } from 'morgan';
 
 export const createCommissioner = async (req, res) => {
   const { name, identityNumber, phoneNumber, password, serviceItemId } =
@@ -61,9 +62,36 @@ export const loginCommissioner = async (req, res) => {
 
   const commissionerToken = createTokenUser(commissioner);
   attachCookiesToResponse({ res, user: commissionerToken });
-  res
-    .status(StatusCodes.OK)
-    .json({ message: 'Login Success', user: commissionerToken });
+
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
+  const headers = res.getHeaders();
+  const setCookieHeader = headers['set-cookie'];
+  let refreshToken = '';
+  if (setCookieHeader) {
+    const tokenMatch = setCookieHeader.match(/token=(s%3A[^;]*)/);
+    if (tokenMatch) {
+      refreshToken = decodeURIComponent(tokenMatch[1]);
+      console.log('Extracted Token:', refreshToken);
+    } else {
+      console.log('Token not found in Set-Cookie header');
+    }
+  }
+  await prisma.token.create({
+    data: {
+      refreshToken,
+      ip: req.ip,
+      commissionerId: commissioner.id,
+      userAgent: req.headers['user-agent'],
+      isValid: true,
+    },
+  });
+
+  res.status(StatusCodes.OK).json({
+    message: 'Login Success',
+    user: commissionerToken,
+    token: refreshToken,
+  });
 };
 
 export const getAllCommissioners = async (req, res) => {

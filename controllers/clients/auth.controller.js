@@ -268,26 +268,8 @@ export const clientLogin = async (req, res) => {
   const clientToken = createTokenUser(client);
   attachCookiesToResponse({ res, user: clientToken });
 
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
+  const refreshToken = crypto.randomBytes(40).toString('hex');
 
-  const headers = res.getHeaders();
-  const setCookieHeader = headers['set-cookie'];
-
-  let refreshToken = '';
-
-  // Parse the token from the `Set-Cookie` header
-  if (setCookieHeader) {
-    const tokenMatch = setCookieHeader.match(/token=(s%3A[^;]*)/);
-    if (tokenMatch) {
-      refreshToken = decodeURIComponent(tokenMatch[1]); // Decode URL-encoded value
-      console.log('Extracted Token:', refreshToken);
-    } else {
-      console.log('Token not found in Set-Cookie header');
-    }
-  }
-
-  // Save the token in the database
   await prisma.token.create({
     data: {
       refreshToken,
@@ -297,6 +279,7 @@ export const clientLogin = async (req, res) => {
       isValid: true,
     },
   });
+
   res.status(StatusCodes.OK).json({ user: clientToken, token: refreshToken });
 };
 
@@ -329,25 +312,34 @@ export const clientLoginWithPhone = async (req, res) => {
   const clientToken = createTokenUser(client);
   attachCookiesToResponse({ res, user: clientToken });
 
-  const token = req.signedCookies.token;
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
+  // res.setHeader('Access-Control-Allow-Credentials', 'true');
+  // res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
+  // const headers = res.getHeaders();
+  // const setCookieHeader = headers['set-cookie'];
+  // let refreshToken = '';
+  // if (setCookieHeader) {
+  //   const tokenMatch = setCookieHeader.match(/token=(s%3A[^;]*)/);
+  //   if (tokenMatch) {
+  //     refreshToken = decodeURIComponent(tokenMatch[1]);
+  //     console.log('Extracted Token:', refreshToken);
+  //   } else {
+  //     console.log('Token not found in Set-Cookie header');
+  //   }
+  // }
 
-  console.log(req.signedCookies.token); // Signed cookies
-
-  const userAgent = req.headers['user-agent'];
+  const refreshToken = crypto.randomBytes(40).toString('hex');
 
   await prisma.token.create({
     data: {
-      refreshToken: token,
+      refreshToken,
       ip: req.ip,
       clientId: client.id,
-      userAgent,
+      userAgent: req.headers['user-agent'],
       isValid: true,
     },
   });
 
-  res.status(StatusCodes.OK).json({ user: clientToken, token });
+  res.status(StatusCodes.OK).json({ user: clientToken, token: refreshToken });
 };
 
 export const logout = async (req, res) => {
