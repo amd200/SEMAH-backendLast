@@ -266,7 +266,21 @@ export const clientLogin = async (req, res) => {
 
   const clientToken = createTokenUser(client);
   attachCookiesToResponse({ res, user: clientToken });
-  res.status(StatusCodes.OK).json({ user: clientToken });
+
+  const token = req.signedCookies.token;
+  const userAgent = req.headers['user-agent'];
+
+  await prisma.token.create({
+    data: {
+      refreshToken: token,
+      ip: req.ip,
+      clientId: client.id,
+      userAgent,
+      isValid: true,
+    },
+  });
+
+  res.status(StatusCodes.OK).json({ user: clientToken, token });
 };
 
 export const clientLoginWithPhone = async (req, res) => {
@@ -297,7 +311,21 @@ export const clientLoginWithPhone = async (req, res) => {
 
   const clientToken = createTokenUser(client);
   attachCookiesToResponse({ res, user: clientToken });
-  res.status(StatusCodes.OK).json({ user: clientToken });
+
+  const token = req.signedCookies.token;
+  const userAgent = req.headers['user-agent'];
+
+  await prisma.token.create({
+    data: {
+      refreshToken: token,
+      ip: req.ip,
+      clientId: client.id,
+      userAgent,
+      isValid: true,
+    },
+  });
+
+  res.status(StatusCodes.OK).json({ user: clientToken, token });
 };
 
 export const logout = async (req, res) => {

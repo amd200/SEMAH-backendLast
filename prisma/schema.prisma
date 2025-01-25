@@ -63,6 +63,7 @@ model Token {
   id Int @id @default(autoincrement())
   refreshToken String
   ip String
+  userAgent String?
   isValid Boolean @default(true)
   client Client @relation(fields: [clientId], references: [id])
   clientId String
