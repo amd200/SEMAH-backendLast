@@ -7,9 +7,8 @@ import stripe from '../../configs/stripeConfig.js';
 
 export const createAppointment = async (req, res) => {
   const clientId = req.user.userId;
-  const { appointmentSubject, consultationId, appointmentType, date } =
-    req.body;
-  if (!appointmentSubject || !consultationId || !appointmentType || !date) {
+  const { consultationId, appointmentType, date } = req.body;
+  if (!consultationId || !appointmentType || !date) {
     throw new BadRequestError('Please provide all required fields');
   }
 
@@ -45,7 +44,6 @@ export const createAppointment = async (req, res) => {
         clientId,
         consultationId,
         date,
-        appointmentSubject,
         appointmentType,
       },
     });
@@ -54,7 +52,7 @@ export const createAppointment = async (req, res) => {
   } else {
     const appointment = await prisma.appointment.create({
       data: {
-        appointmentSubject,
+        appointmentSubject: 'FREE_CONSULTATION',
         consultationId: parseInt(consultationId),
         appointmentType,
         date: new Date(date).toISOString(),
@@ -132,7 +130,7 @@ export const handlePaidAppointment = async (req, res) => {
 
   const appointment = await prisma.appointment.create({
     data: {
-      appointmentSubject,
+      appointmentSubject: 'PAID_CONSULTATION',
       consultationId: parseInt(consultationId, 10),
       appointmentType,
       date: new Date(date).toISOString(),

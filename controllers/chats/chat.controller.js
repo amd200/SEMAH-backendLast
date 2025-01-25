@@ -6,6 +6,8 @@ import NotFoundError from '../../errors/not-found.js';
 
 export const getChats = async (req, res) => {
   const userId = req.user.userId;
+  const role = req.user.role;
+
   const client = await prisma.client.findUnique({
     where: { id: userId },
   });
@@ -44,7 +46,7 @@ export const getChats = async (req, res) => {
     where: { id: userId },
   });
 
-  if (!admin) {
+  if (admin) {
     const chats = await prisma.chat.findMany({});
     return res.status(StatusCodes.OK).json(chats);
   }

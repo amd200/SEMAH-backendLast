@@ -2,6 +2,12 @@
 CREATE TYPE "Role" AS ENUM ('EMPLOYEE', 'CLIENT');
 
 -- CreateEnum
+CREATE TYPE "AppointmentTypes" AS ENUM ('IN_COMPANY', 'ONLINE');
+
+-- CreateEnum
+CREATE TYPE "AppointmentSubjects" AS ENUM ('PAID_CONSULTATION', 'FREE_CONSULTATION', 'CONSULTATION', 'PREVIOUS_WORK');
+
+-- CreateEnum
 CREATE TYPE "PaymentStatus" AS ENUM ('PENDING', 'SUCCESS', 'FAILED', 'REFUNDED');
 
 -- CreateEnum
@@ -56,13 +62,29 @@ CREATE TABLE "Client" (
 );
 
 -- CreateTable
-CREATE TABLE "Commissioner" (
+CREATE TABLE "Token" (
     "id" SERIAL NOT NULL,
+    "refreshToken" TEXT NOT NULL,
+    "ip" TEXT NOT NULL,
+    "userAgent" TEXT,
+    "isValid" BOOLEAN NOT NULL DEFAULT true,
+    "clientId" TEXT,
+    "commissionerId" TEXT,
+    "adminId" TEXT,
+    "employeeId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Token_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Commissioner" (
+    "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "identityNumber" TEXT NOT NULL,
     "phoneNumber" TEXT NOT NULL,
     "password" TEXT NOT NULL,
-    "serviceItemId" INTEGER,
     "clientId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -182,7 +204,8 @@ CREATE TABLE "Payment" (
 CREATE TABLE "OrderItem" (
     "id" SERIAL NOT NULL,
     "orderId" INTEGER NOT NULL,
-    "serviceItemId" INTEGER NOT NULL,
+    "serviceItemId" INTEGER,
+    "consultationId" INTEGER,
     "priceAtTime" DOUBLE PRECISION NOT NULL,
     "quantity" INTEGER NOT NULL DEFAULT 1,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -194,9 +217,11 @@ CREATE TABLE "OrderItem" (
 -- CreateTable
 CREATE TABLE "Chat" (
     "id" SERIAL NOT NULL,
-    "serviceItemId" INTEGER NOT NULL,
+    "serviceItemId" INTEGER,
+    "appointmentId" INTEGER,
     "clientId" TEXT NOT NULL,
     "employeeId" TEXT NOT NULL,
+    "commissionerId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -215,6 +240,31 @@ CREATE TABLE "Message" (
 );
 
 -- CreateTable
+CREATE TABLE "Appointment" (
+    "id" SERIAL NOT NULL,
+    "appointmentSubject" "AppointmentSubjects" NOT NULL,
+    "consultationId" INTEGER,
+    "clientId" TEXT,
+    "appointmentType" "AppointmentTypes" NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Appointment_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Consultation" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "price" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Consultation_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "_ClientToServiceItem" (
     "A" TEXT NOT NULL,
     "B" INTEGER NOT NULL,
@@ -223,11 +273,35 @@ CREATE TABLE "_ClientToServiceItem" (
 );
 
 -- CreateTable
+CREATE TABLE "_CommissionerToServiceItem" (
+    "A" TEXT NOT NULL,
+    "B" INTEGER NOT NULL,
+
+    CONSTRAINT "_CommissionerToServiceItem_AB_pkey" PRIMARY KEY ("A","B")
+);
+
+-- CreateTable
+CREATE TABLE "_CommissionerToOrder" (
+    "A" TEXT NOT NULL,
+    "B" INTEGER NOT NULL,
+
+    CONSTRAINT "_CommissionerToOrder_AB_pkey" PRIMARY KEY ("A","B")
+);
+
+-- CreateTable
 CREATE TABLE "_EmployeeToServiceItem" (
     "A" TEXT NOT NULL,
     "B" INTEGER NOT NULL,
 
     CONSTRAINT "_EmployeeToServiceItem_AB_pkey" PRIMARY KEY ("A","B")
+);
+
+-- CreateTable
+CREATE TABLE "_ConsultationToEmployee" (
+    "A" INTEGER NOT NULL,
+    "B" TEXT NOT NULL,
+
+    CONSTRAINT "_ConsultationToEmployee_AB_pkey" PRIMARY KEY ("A","B")
 );
 
 -- CreateIndex
@@ -246,10 +320,28 @@ CREATE UNIQUE INDEX "Cart_clientId_serviceItemId_key" ON "Cart"("clientId", "ser
 CREATE INDEX "_ClientToServiceItem_B_index" ON "_ClientToServiceItem"("B");
 
 -- CreateIndex
+CREATE INDEX "_CommissionerToServiceItem_B_index" ON "_CommissionerToServiceItem"("B");
+
+-- CreateIndex
+CREATE INDEX "_CommissionerToOrder_B_index" ON "_CommissionerToOrder"("B");
+
+-- CreateIndex
 CREATE INDEX "_EmployeeToServiceItem_B_index" ON "_EmployeeToServiceItem"("B");
 
+-- CreateIndex
+CREATE INDEX "_ConsultationToEmployee_B_index" ON "_ConsultationToEmployee"("B");
+
 -- AddForeignKey
-ALTER TABLE "Commissioner" ADD CONSTRAINT "Commissioner_serviceItemId_fkey" FOREIGN KEY ("serviceItemId") REFERENCES "ServiceItem"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Token" ADD CONSTRAINT "Token_clientId_fkey" FOREIGN KEY ("clientId") REFERENCES "Client"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Token" ADD CONSTRAINT "Token_commissionerId_fkey" FOREIGN KEY ("commissionerId") REFERENCES "Commissioner"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Token" ADD CONSTRAINT "Token_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES "Admin"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Token" ADD CONSTRAINT "Token_employeeId_fkey" FOREIGN KEY ("employeeId") REFERENCES "Employee"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Commissioner" ADD CONSTRAINT "Commissioner_clientId_fkey" FOREIGN KEY ("clientId") REFERENCES "Client"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -279,10 +371,16 @@ ALTER TABLE "Payment" ADD CONSTRAINT "Payment_orderId_fkey" FOREIGN KEY ("orderI
 ALTER TABLE "OrderItem" ADD CONSTRAINT "OrderItem_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "OrderItem" ADD CONSTRAINT "OrderItem_serviceItemId_fkey" FOREIGN KEY ("serviceItemId") REFERENCES "ServiceItem"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "OrderItem" ADD CONSTRAINT "OrderItem_serviceItemId_fkey" FOREIGN KEY ("serviceItemId") REFERENCES "ServiceItem"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Chat" ADD CONSTRAINT "Chat_serviceItemId_fkey" FOREIGN KEY ("serviceItemId") REFERENCES "ServiceItem"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "OrderItem" ADD CONSTRAINT "OrderItem_consultationId_fkey" FOREIGN KEY ("consultationId") REFERENCES "Consultation"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Chat" ADD CONSTRAINT "Chat_serviceItemId_fkey" FOREIGN KEY ("serviceItemId") REFERENCES "ServiceItem"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Chat" ADD CONSTRAINT "Chat_appointmentId_fkey" FOREIGN KEY ("appointmentId") REFERENCES "Appointment"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Chat" ADD CONSTRAINT "Chat_clientId_fkey" FOREIGN KEY ("clientId") REFERENCES "Client"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -291,7 +389,16 @@ ALTER TABLE "Chat" ADD CONSTRAINT "Chat_clientId_fkey" FOREIGN KEY ("clientId") 
 ALTER TABLE "Chat" ADD CONSTRAINT "Chat_employeeId_fkey" FOREIGN KEY ("employeeId") REFERENCES "Employee"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Chat" ADD CONSTRAINT "Chat_commissionerId_fkey" FOREIGN KEY ("commissionerId") REFERENCES "Commissioner"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Message" ADD CONSTRAINT "Message_chatId_fkey" FOREIGN KEY ("chatId") REFERENCES "Chat"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Appointment" ADD CONSTRAINT "Appointment_consultationId_fkey" FOREIGN KEY ("consultationId") REFERENCES "Consultation"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Appointment" ADD CONSTRAINT "Appointment_clientId_fkey" FOREIGN KEY ("clientId") REFERENCES "Client"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_ClientToServiceItem" ADD CONSTRAINT "_ClientToServiceItem_A_fkey" FOREIGN KEY ("A") REFERENCES "Client"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -300,7 +407,25 @@ ALTER TABLE "_ClientToServiceItem" ADD CONSTRAINT "_ClientToServiceItem_A_fkey" 
 ALTER TABLE "_ClientToServiceItem" ADD CONSTRAINT "_ClientToServiceItem_B_fkey" FOREIGN KEY ("B") REFERENCES "ServiceItem"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "_CommissionerToServiceItem" ADD CONSTRAINT "_CommissionerToServiceItem_A_fkey" FOREIGN KEY ("A") REFERENCES "Commissioner"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_CommissionerToServiceItem" ADD CONSTRAINT "_CommissionerToServiceItem_B_fkey" FOREIGN KEY ("B") REFERENCES "ServiceItem"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_CommissionerToOrder" ADD CONSTRAINT "_CommissionerToOrder_A_fkey" FOREIGN KEY ("A") REFERENCES "Commissioner"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_CommissionerToOrder" ADD CONSTRAINT "_CommissionerToOrder_B_fkey" FOREIGN KEY ("B") REFERENCES "Order"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "_EmployeeToServiceItem" ADD CONSTRAINT "_EmployeeToServiceItem_A_fkey" FOREIGN KEY ("A") REFERENCES "Employee"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_EmployeeToServiceItem" ADD CONSTRAINT "_EmployeeToServiceItem_B_fkey" FOREIGN KEY ("B") REFERENCES "ServiceItem"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_ConsultationToEmployee" ADD CONSTRAINT "_ConsultationToEmployee_A_fkey" FOREIGN KEY ("A") REFERENCES "Consultation"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_ConsultationToEmployee" ADD CONSTRAINT "_ConsultationToEmployee_B_fkey" FOREIGN KEY ("B") REFERENCES "Employee"("id") ON DELETE CASCADE ON UPDATE CASCADE;

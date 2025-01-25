@@ -282,6 +282,8 @@ enum AppointmentTypes {
 }
 
 enum AppointmentSubjects {
+  PAID_CONSULTATION
+  FREE_CONSULTATION
   CONSULTATION
   PREVIOUS_WORK
 }
