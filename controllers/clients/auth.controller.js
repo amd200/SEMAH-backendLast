@@ -268,8 +268,19 @@ export const clientLogin = async (req, res) => {
   const clientToken = createTokenUser(client);
   attachCookiesToResponse({ res, user: clientToken });
 
-  const refreshToken = crypto.randomBytes(40).toString('hex');
-
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
+  const headers = res.getHeaders();
+  const setCookieHeader = headers['set-cookie'];
+  let refreshToken = '';
+  if (setCookieHeader) {
+    const tokenMatch = setCookieHeader.match(/token=(s%3A[^;]*)/);
+    if (tokenMatch) {
+      refreshToken = decodeURIComponent(tokenMatch[1]);
+    } else {
+      console.log('Token not found in Set-Cookie header');
+    }
+  }
   await prisma.token.create({
     data: {
       refreshToken,
@@ -279,7 +290,6 @@ export const clientLogin = async (req, res) => {
       isValid: true,
     },
   });
-
   res.status(StatusCodes.OK).json({ user: clientToken, token: refreshToken });
 };
 

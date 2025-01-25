@@ -11,6 +11,7 @@ import {
   sendEmail,
   sendWhatsAppMessage,
 } from '../../configs/sendgridConfig.js';
+import { token } from 'morgan';
 
 export const employeeRegister = async (req, res) => {
   const { name, email, identityNumber, dob, password, phoneNumber } = req.body;
@@ -235,7 +236,33 @@ export const employeeLogin = async (req, res) => {
 
   const employeeToken = createTokenUser(employee);
   attachCookiesToResponse({ res, user: employeeToken });
-  res.status(StatusCodes.OK).json({ employee: employeeToken });
+
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
+  const headers = res.getHeaders();
+  const setCookieHeader = headers['set-cookie'];
+  let refreshToken = '';
+  if (setCookieHeader) {
+    const tokenMatch = setCookieHeader.match(/token=(s%3A[^;]*)/);
+    if (tokenMatch) {
+      refreshToken = decodeURIComponent(tokenMatch[1]);
+    } else {
+      console.log('Token not found in Set-Cookie header');
+    }
+  }
+  await prisma.token.create({
+    data: {
+      refreshToken,
+      ip: req.ip,
+      employeeId: employee.id,
+      userAgent: req.headers['user-agent'],
+      isValid: true,
+    },
+  });
+
+  res
+    .status(StatusCodes.OK)
+    .json({ employee: employeeToken, token: refreshToken });
 };
 
 export const logout = async (req, res) => {

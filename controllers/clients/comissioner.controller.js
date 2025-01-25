@@ -72,7 +72,6 @@ export const loginCommissioner = async (req, res) => {
     const tokenMatch = setCookieHeader.match(/token=(s%3A[^;]*)/);
     if (tokenMatch) {
       refreshToken = decodeURIComponent(tokenMatch[1]);
-      console.log('Extracted Token:', refreshToken);
     } else {
       console.log('Token not found in Set-Cookie header');
     }
