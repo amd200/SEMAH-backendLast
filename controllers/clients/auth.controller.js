@@ -267,20 +267,23 @@ export const clientLogin = async (req, res) => {
   const clientToken = createTokenUser(client);
   attachCookiesToResponse({ res, user: clientToken });
 
-  const token = req.signedCookies.token;
+  const refreshToken = crypto.randomBytes(40).toString('hex');
   const userAgent = req.headers['user-agent'];
 
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
+
+  // Store the refresh token in the database
   await prisma.token.create({
     data: {
-      refreshToken: token,
+      refreshToken,
       ip: req.ip,
       clientId: client.id,
       userAgent,
       isValid: true,
     },
   });
-
-  res.status(StatusCodes.OK).json({ user: clientToken, token });
+  res.status(StatusCodes.OK).json({ user: clientToken, token: refreshToken });
 };
 
 export const clientLoginWithPhone = async (req, res) => {
@@ -313,6 +316,11 @@ export const clientLoginWithPhone = async (req, res) => {
   attachCookiesToResponse({ res, user: clientToken });
 
   const token = req.signedCookies.token;
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
+
+  console.log(req.signedCookies.token); // Signed cookies
+
   const userAgent = req.headers['user-agent'];
 
   await prisma.token.create({
