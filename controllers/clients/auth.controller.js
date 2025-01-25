@@ -14,6 +14,7 @@ import {
 } from '../../configs/sendgridConfig.js';
 import twilio from 'twilio';
 import NotFoundError from '../../errors/not-found.js';
+import { token } from 'morgan';
 
 const client = twilio(
   process.env.TWILIO_ACCOUNT_SID,
@@ -267,19 +268,32 @@ export const clientLogin = async (req, res) => {
   const clientToken = createTokenUser(client);
   attachCookiesToResponse({ res, user: clientToken });
 
-  const refreshToken = crypto.randomBytes(40).toString('hex');
-  const userAgent = req.headers['user-agent'];
-
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
 
-  // Store the refresh token in the database
+  const headers = res.getHeaders();
+  const setCookieHeader = headers['set-cookie'];
+
+  let refreshToken = '';
+
+  // Parse the token from the `Set-Cookie` header
+  if (setCookieHeader) {
+    const tokenMatch = setCookieHeader.match(/token=(s%3A[^;]*)/);
+    if (tokenMatch) {
+      refreshToken = decodeURIComponent(tokenMatch[1]); // Decode URL-encoded value
+      console.log('Extracted Token:', refreshToken);
+    } else {
+      console.log('Token not found in Set-Cookie header');
+    }
+  }
+
+  // Save the token in the database
   await prisma.token.create({
     data: {
       refreshToken,
       ip: req.ip,
       clientId: client.id,
-      userAgent,
+      userAgent: req.headers['user-agent'],
       isValid: true,
     },
   });
