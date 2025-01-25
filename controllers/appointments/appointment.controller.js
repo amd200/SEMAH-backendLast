@@ -51,18 +51,18 @@ export const createAppointment = async (req, res) => {
     });
 
     res.status(StatusCodes.OK).json({ url: session.url });
+  } else {
+    const appointment = await prisma.appointment.create({
+      data: {
+        appointmentSubject,
+        consultationId: parseInt(consultationId),
+        appointmentType,
+        date: new Date(date).toISOString(),
+        clientId: req.user.userId,
+      },
+    });
+    res.status(StatusCodes.OK).json({ appointment });
   }
-
-  const appointment = await prisma.appointment.create({
-    data: {
-      appointmentSubject,
-      consultationId: parseInt(consultationId),
-      appointmentType,
-      date: new Date(date).toISOString(),
-      clientId: req.user.userId,
-    },
-  });
-  res.status(StatusCodes.OK).json({ appointment });
 };
 
 export const handlePaidAppointment = async (req, res) => {
