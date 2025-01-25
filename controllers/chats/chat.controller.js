@@ -40,6 +40,15 @@ export const getChats = async (req, res) => {
     return res.status(StatusCodes.OK).json(chats);
   }
 
+  const admin = await prisma.admin.findUnique({
+    where: { id: userId },
+  });
+
+  if (!admin) {
+    const chats = await prisma.chat.findMany({});
+    return res.status(StatusCodes.OK).json(chats);
+  }
+
   const commissioner = await prisma.commissioner.findUnique({
     where: { id: userId },
   });
