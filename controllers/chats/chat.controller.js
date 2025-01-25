@@ -74,6 +74,15 @@ export const getChats = async (req, res) => {
 export const getMessages = async (req, res) => {
   const { chatId } = req.params;
   const userId = req.user.userId;
+  const role = req.user.role;
+
+  if (role === 'ADMIN') {
+    const messages = await prisma.message.findMany({
+      where: { chatId: parseInt(chatId, 10) },
+      orderBy: { createdAt: 'asc' },
+    });
+    return res.status(StatusCodes.OK).json(messages);
+  }
 
   const chat = await prisma.chat.findUnique({
     where: { id: parseInt(chatId, 10) },
@@ -88,8 +97,6 @@ export const getMessages = async (req, res) => {
   );
   const isClient = chat.clientId === userId;
   const isEmployee = chat.employeeId === userId;
-
-  console.log(isClient, isEmployee, isCommissioner);
 
   if (!isClient && !isEmployee && !isCommissioner) {
     return res.status(StatusCodes.FORBIDDEN).json({
