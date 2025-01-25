@@ -34,6 +34,7 @@ export const getChats = async (req, res) => {
       include: {
         serviceItem: { select: { name: true } },
         client: { select: { name: true, email: true } },
+        appointment: true,
       },
     });
     return res.status(StatusCodes.OK).json(chats);
